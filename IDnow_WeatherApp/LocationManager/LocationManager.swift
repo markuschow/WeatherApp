@@ -26,6 +26,8 @@ class LocationManager: NSObject {
 	
 	weak var delegate: LocationManagerDelegate?
 	
+	var cities: [City]?
+	
 	override init() {
 		manager = CLLocationManager()
 		geoCoder = CLGeocoder()
@@ -46,22 +48,12 @@ class LocationManager: NSObject {
 		manager.stopUpdatingLocation()
 	}
 	
-	func getCityData(cityCoord: Coordinate, completionHandler: @escaping CityDataCompletionHandler) {
+	func getCityData(cities: [City], cityCoord: Coordinate, completionHandler: @escaping CityDataCompletionHandler) {
 		
-		do {
-			let path = Bundle.main.path(forResource: "citylist", ofType: "json")
-			let data = try Data(contentsOf: URL(fileURLWithPath: path!), options: .mappedIfSafe)
-			let jsonData = try JSONDecoder().decode([City].self, from: data)
-			let cities: [City] = jsonData
-			
-			if let city: City = getCity(cityCoord: cityCoord, cities: cities) {
-				completionHandler(city, nil)
-			} else {
-				completionHandler(nil, nil)
-			}
-			
-		} catch {
-			completionHandler(nil, CityDataError.readFileError)
+		if let city: City = getCity(cityCoord: cityCoord, cities: cities) {
+			completionHandler(city, nil)
+		} else {
+			completionHandler(nil, .readFileError)
 		}
 	}
 	

@@ -14,10 +14,26 @@ class MainViewController: UIViewController {
 	
 	var network: Network?
 	
+	let searchController = UISearchController(searchResultsController: nil)
+	
+	var filteredCities = [City]()
+	
 	struct ViewConfig {
 		static let padding: CGFloat = 10
 		static let containerViewHeight: CGFloat = 180
 	}
+	
+	lazy var cities: [City] = {
+		do {
+			let path = Bundle.main.path(forResource: "citylist", ofType: "json")
+			let data = try Data(contentsOf: URL(fileURLWithPath: path!), options: .mappedIfSafe)
+			let jsonData = try JSONDecoder().decode([City].self, from: data)
+			let cities: [City] = jsonData
+			return cities
+		} catch {
+			return []
+		}
+	}()
 	
 	private lazy var imageView: UIImageView = {
 		let imageView = UIImageView(frame: .zero)
@@ -26,7 +42,7 @@ class MainViewController: UIViewController {
 		imageView.setAccessibility(id: MainViewControllerAcessiblityIdentifier.backgroundImageIdentifier.rawValue, label: nil)
 		return imageView
 	}()
-	
+
 	lazy var weatherInfoView: WeatherInfoView = {
 		let view = WeatherInfoView()
 		view.translatesAutoresizingMaskIntoConstraints = false
@@ -39,7 +55,16 @@ class MainViewController: UIViewController {
 
 		return view
 	}()
-
+	
+	private lazy var tableView: UITableView = {
+		let tableView = UITableView(frame: .zero, style: .plain)
+		tableView.translatesAutoresizingMaskIntoConstraints = false
+		tableView.setAccessibility(id: MainViewControllerAcessiblityIdentifier.tableViewViewIdentifier.rawValue, label: nil)
+		tableView.dataSource = self
+		tableView.delegate = self
+		return tableView
+	}()
+	
 	// MARK: - Views
 	
 	override var preferredStatusBarStyle: UIStatusBarStyle {
@@ -69,7 +94,8 @@ class MainViewController: UIViewController {
 	
 		self.view.addSubview(imageView)
 		self.view.addSubview(weatherInfoView)
-		
+
+		setupSearchController()
 	}
 	
 	private func applyAutolayoutConstraints() {
@@ -96,6 +122,22 @@ class MainViewController: UIViewController {
 		
 	}
 	
+	func setupSearchController() {
+		searchController.searchResultsUpdater = self
+		searchController.obscuresBackgroundDuringPresentation = false
+		searchController.searchBar.placeholder = "Search City"
+		searchController.searchBar.searchBarStyle = .minimal
+		searchController.searchBar.tintColor = .white
+		navigationItem.searchController = searchController
+		definesPresentationContext = true
+		
+		self.navigationController?.navigationBar.setBackgroundImage(UIImage(), for: UIBarMetrics.default)
+		self.navigationController?.navigationBar.shadowImage = UIImage()
+		self.navigationController?.navigationBar.isTranslucent = true
+		self.navigationController?.view.backgroundColor = .clear
+		
+	}
+	
 	// MARK: - Methods
 	func setupLocationManager() {
 		if locationManager == nil {
@@ -103,8 +145,42 @@ class MainViewController: UIViewController {
 			locationManager?.delegate = self
 		}
 		locationManager?.startUpdateLocation()
+		
 	}
 	
+	// MARK: - Search methods
+	
+	func filterContentForSearchText(_ searchText: String) {
+		
+		filteredCities = cities.filter({( city : City) -> Bool in
+			if !searchBarIsEmpty() {
+				return city.name.lowercased().contains(searchText.lowercased())
+			}
+			return false
+		})
+		tableView.reloadData()
+	}
+	
+	func searchBarIsEmpty() -> Bool {
+		return searchController.searchBar.text?.isEmpty ?? true
+	}
+	
+	func isFiltering() -> Bool {
+		let searchBarScopeIsFiltering = searchController.searchBar.selectedScopeButtonIndex != 0
+		return searchController.isActive && (!searchBarIsEmpty() || searchBarScopeIsFiltering)
+	}
+}
+
+extension MainViewController: UISearchBarDelegate {
+	
+}
+
+extension MainViewController: UISearchResultsUpdating {
+	func updateSearchResults(for searchController: UISearchController) {
+		if let text = searchController.searchBar.text {
+			filterContentForSearchText(text)
+		}
+	}
 }
 
 extension MainViewController: WeatherInfoViewDelegate {
@@ -125,7 +201,7 @@ extension MainViewController: LocationManagerDelegate {
 		
 		weatherInfoView.cityLabel.text = cityName
 		
-		locationManager?.getCityData(cityCoord: coord, completionHandler: {  [weak self] (city, error) in
+		locationManager?.getCityData(cities: cities, cityCoord: coord, completionHandler: {  [weak self] (city, error) in
 			guard let self = self else { return }
 			
 			guard error == nil, let city = city else {
@@ -145,11 +221,19 @@ extension MainViewController: LocationManagerDelegate {
 				if let weatherResponse = response {
 					print(weatherResponse)
 
-					self.weatherInfoView.tempLabel.text = String(Int(weatherResponse.main.temp)) + WeatherSign.celsius
-					self.weatherInfoView.minTempLabel.text = WeatherSign.minTemp + String(Int(weatherResponse.main.temp_min)) + WeatherSign.celsius
-					self.weatherInfoView.maxTempLabel.text = WeatherSign.maxTemp + String(Int(weatherResponse.main.temp_max)) + WeatherSign.celsius
+					if let temp = weatherResponse.main?.temp {
+						self.weatherInfoView.tempLabel.text = String(Int(temp)) + WeatherSign.celsius
+					}
 					
-					if let id: Int = weatherResponse.weather.first?.id, let main = weatherResponse.weather.first?.main {
+					if let min = weatherResponse.main?.temp_min {
+						self.weatherInfoView.minTempLabel.text = WeatherSign.minTemp + String(Int(min)) + WeatherSign.celsius
+					}
+					
+					if let max = weatherResponse.main?.temp_max {
+						self.weatherInfoView.maxTempLabel.text = WeatherSign.maxTemp + String(Int(max)) + WeatherSign.celsius
+					}
+					
+					if let id: Int = weatherResponse.weather?.first?.id, let main = weatherResponse.weather?.first?.main {
 						self.weatherInfoView.conditionLabel.text = main
 						let condition = ImageStore.getWeatherImageName(id: id)
 						self.imageView.image = ImageStore.getRandomImage(condition: condition, timeZone: timeZone)
@@ -170,6 +254,10 @@ extension MainViewController: UITableViewDelegate {
 }
 
 extension MainViewController: UITableViewDataSource {
+	func numberOfSections(in tableView: UITableView) -> Int {
+		return 1
+	}
+	
 	func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
 		return 0
 	}

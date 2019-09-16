@@ -28,7 +28,7 @@ class MockLocationManager: LocationManager {
 		stopCalled += 1
 	}
 	
-	override func getCityData(cityCoord: Coordinate, completionHandler: @escaping CityDataCompletionHandler) {
+	override func getCityData(cities: [City], cityCoord: Coordinate, completionHandler: @escaping CityDataCompletionHandler) {
 		if returnCityData {
 			completionHandler(city, nil)
 		}
