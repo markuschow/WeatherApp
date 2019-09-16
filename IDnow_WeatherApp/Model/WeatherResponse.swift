@@ -14,7 +14,7 @@ public struct WeatherResponse: Decodable {
 	let base: String
 	let main: Main
 	let visibility: Int
-	let wind: Wind
+	let wind: Wind?
 	let clouds: Clouds
 	let dt: Int
 	let sys: Sys
@@ -73,7 +73,7 @@ public struct Main: Decodable {
 
 public struct Wind: Decodable {
 	let speed: Double
-	let deg: Int?
+	let deg: Double?
 	
 	enum CodingKeys: String, CodingKey  {
 		case speed

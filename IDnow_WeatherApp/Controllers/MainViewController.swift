@@ -12,85 +12,34 @@ class MainViewController: UIViewController {
 
 	var locationManager: LocationManager?
 	
+	var network: Network?
+	
 	struct ViewConfig {
 		static let padding: CGFloat = 10
 		static let containerViewHeight: CGFloat = 180
-		static let cityLabelHeight: CGFloat = 30
-		static let tempLabelHeight: CGFloat = 80
-		static let minMaxTempLabelWidth: CGFloat = 80
-		static let minMaxTempLabelHeight: CGFloat = 30
 	}
 	
 	private lazy var imageView: UIImageView = {
 		let imageView = UIImageView(frame: .zero)
 		imageView.translatesAutoresizingMaskIntoConstraints = false
 		imageView.contentMode = .scaleAspectFill
+		imageView.setAccessibility(id: MainViewControllerAcessiblityIdentifier.backgroundImageIdentifier.rawValue, label: nil)
 		return imageView
 	}()
 	
-	private lazy var containerView: UIView = {
-		let view = UIView(frame: .zero)
+	lazy var weatherInfoView: WeatherInfoView = {
+		let view = WeatherInfoView()
 		view.translatesAutoresizingMaskIntoConstraints = false
+		view.delegate = self
 		view.layer.cornerRadius = 10.0
 		view.clipsToBounds = true
+		view.setAccessibility(id: MainViewControllerAcessiblityIdentifier.weatherInfoViewIdentifier.rawValue, label: nil)
+		view.setupViews()
+		view.applyAutolayoutConstraints()
+
 		return view
 	}()
-	
-	private lazy var blurView: UIVisualEffectView = {
-		let blurEffect = UIBlurEffect(style: .dark)
-		let view = UIVisualEffectView(effect: blurEffect)
-		view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-		view.translatesAutoresizingMaskIntoConstraints = false
-		view.layer.cornerRadius = 10.0
-		view.clipsToBounds = true
-		view.alpha = 0.6
-		return view
-	}()
-	
-	private lazy var cityLabel: UILabel = {
-		let label = UILabel(frame: .zero)
-		label.translatesAutoresizingMaskIntoConstraints = false
-		label.numberOfLines = 0
-		label.font = UIFont.systemFont(ofSize: 20)
-		label.textColor = .white
-		return label
-	}()
-	
-	private lazy var tempLabel: UILabel = {
-		let label = UILabel(frame: .zero)
-		label.translatesAutoresizingMaskIntoConstraints = false
-		label.numberOfLines = 0
-		label.font = UIFont.systemFont(ofSize: 80)
-		label.textColor = .white
-		return label
-	}()
-	
-	private lazy var minTempLabel: UILabel = {
-		let label = UILabel(frame: .zero)
-		label.translatesAutoresizingMaskIntoConstraints = false
-		label.numberOfLines = 0
-		label.font = UIFont.systemFont(ofSize: 20)
-		label.textColor = .white
-		return label
-	}()
-	
-	private lazy var maxTempLabel: UILabel = {
-		let label = UILabel(frame: .zero)
-		label.translatesAutoresizingMaskIntoConstraints = false
-		label.numberOfLines = 0
-		label.font = UIFont.systemFont(ofSize: 20)
-		label.textColor = .white
-		return label
-	}()
-	
-	private lazy var refreshButton: UIButton = {
-		let button = UIButton(frame: .zero)
-		button.translatesAutoresizingMaskIntoConstraints = false
-		button.addTarget(self, action: #selector(refreshAction(_:)), for: .touchUpInside)
-		button.setBackgroundImage(ImageStore.refreshImage(), for: .normal)
-		return button
-	}()
-	
+
 	// MARK: - Views
 	
 	override var preferredStatusBarStyle: UIStatusBarStyle {
@@ -110,22 +59,17 @@ class MainViewController: UIViewController {
 
 	override func viewDidAppear(_ animated: Bool) {
 		super.viewDidAppear(animated)
-
-
+		
+		refresh()
+		
 	}
 	
 	// MARK: - Setup
 	func setupViews() {
-		
+	
 		self.view.addSubview(imageView)
-		self.view.addSubview(containerView)
-		containerView.addSubview(blurView)
-		containerView.addSubview(refreshButton)
-		containerView.addSubview(cityLabel)
-		containerView.addSubview(tempLabel)
-		containerView.addSubview(minTempLabel)
-		containerView.addSubview(maxTempLabel)
-
+		self.view.addSubview(weatherInfoView)
+		
 	}
 	
 	private func applyAutolayoutConstraints() {
@@ -143,40 +87,10 @@ class MainViewController: UIViewController {
 			imageView.topAnchor.constraint(equalTo: view.topAnchor),
 			imageView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
 
-			containerView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: ViewConfig.padding),
-			containerView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -ViewConfig.padding),
-			containerView.bottomAnchor.constraint(equalTo: bottom, constant: -ViewConfig.padding),
-			containerView.heightAnchor.constraint(equalToConstant: ViewConfig.containerViewHeight),
-
-			blurView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor),
-			blurView.trailingAnchor.constraint(equalTo: containerView.trailingAnchor),
-			blurView.topAnchor.constraint(equalTo: containerView.topAnchor),
-			blurView.bottomAnchor.constraint(equalTo: containerView.bottomAnchor),
-
-			refreshButton.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -ViewConfig.padding),
-			refreshButton.topAnchor.constraint(equalTo: containerView.topAnchor, constant: ViewConfig.padding),
-			refreshButton.widthAnchor.constraint(equalToConstant: ViewConfig.cityLabelHeight),
-			refreshButton.heightAnchor.constraint(equalToConstant: ViewConfig.cityLabelHeight),
-
-			cityLabel.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: ViewConfig.padding),
-			cityLabel.trailingAnchor.constraint(equalTo: refreshButton.leadingAnchor, constant: ViewConfig.padding),
-			cityLabel.topAnchor.constraint(equalTo: containerView.topAnchor, constant: ViewConfig.padding),
-			cityLabel.heightAnchor.constraint(equalToConstant: ViewConfig.cityLabelHeight),
-
-			tempLabel.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: ViewConfig.padding),
-			tempLabel.trailingAnchor.constraint(equalTo: containerView.trailingAnchor),
-			tempLabel.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -ViewConfig.padding),
-			tempLabel.heightAnchor.constraint(equalToConstant: ViewConfig.tempLabelHeight),
-
-			minTempLabel.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: ViewConfig.padding),
-			minTempLabel.widthAnchor.constraint(equalToConstant: ViewConfig.minMaxTempLabelWidth),
-			minTempLabel.bottomAnchor.constraint(equalTo: tempLabel.topAnchor, constant: -ViewConfig.padding),
-			minTempLabel.heightAnchor.constraint(equalToConstant: ViewConfig.minMaxTempLabelHeight),
-
-			maxTempLabel.leadingAnchor.constraint(equalTo: minTempLabel.trailingAnchor, constant: ViewConfig.padding),
-			maxTempLabel.widthAnchor.constraint(equalToConstant: ViewConfig.minMaxTempLabelWidth),
-			maxTempLabel.bottomAnchor.constraint(equalTo: tempLabel.topAnchor, constant: -ViewConfig.padding),
-			maxTempLabel.heightAnchor.constraint(equalToConstant: ViewConfig.minMaxTempLabelHeight),
+			weatherInfoView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: ViewConfig.padding),
+			weatherInfoView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -ViewConfig.padding),
+			weatherInfoView.bottomAnchor.constraint(equalTo: bottom, constant: -ViewConfig.padding),
+			weatherInfoView.heightAnchor.constraint(equalToConstant: ViewConfig.containerViewHeight),
 
 			])
 		
@@ -184,72 +98,73 @@ class MainViewController: UIViewController {
 	
 	// MARK: - Methods
 	func setupLocationManager() {
-		locationManager = LocationManager()
-		locationManager?.delegate = self
-		locationManager?.manager.startUpdatingLocation()
-		locationManager?.startUpdateLocation()
-	}
-	
-	@objc func refreshAction(_ sender: UIButton) {
+		if locationManager == nil {
+			locationManager = LocationManager()
+			locationManager?.delegate = self
+		}
 		locationManager?.startUpdateLocation()
 	}
 	
 }
 
+extension MainViewController: WeatherInfoViewDelegate {
+	func refresh() {
+		if network == nil {
+			network = Network()
+		}
+		weatherInfoView.loadingView(show: true)
+		self.setupLocationManager()
+	}
+}
+
 extension MainViewController: LocationManagerDelegate {
-	func updateCity(_ cityName: String, coord: Coordinate) {
+	func updateCity(_ cityName: String, timeZone: TimeZone, coord: Coordinate) {
 		print("cityName: \(cityName)")
+		print("timeZone: \(timeZone)")
 		print("coord: \(coord)")
 		
-		cityLabel.text = cityName
+		weatherInfoView.cityLabel.text = cityName
 		
-		locationManager?.getCityData(cityCoord: coord, completionHandler: { (city, error) in
+		locationManager?.getCityData(cityCoord: coord, completionHandler: {  [weak self] (city, error) in
+			guard let self = self else { return }
+			
 			guard error == nil, let city = city else {
-				//TODO: show error alert
-				print("show error: \(String(describing: error))")
+				AlertView.show(title: "Get City Error", message: nil, action: "OK", on: self)
+				self.weatherInfoView.loadingView(show: false)
 				return
 			}
 			
-			Network.getCityWeather(id: city.id, units: weatherAPI.celsius, completionHandler: { [weak self] (response, error) in
-				guard let self = self else { return }
+			self.network?.getCityWeather(id: city.id, units: WeatherAPI.celsius, completionHandler: { (response, error) in
 				
 				if let error = error {
-					//TODO: show error alert
-					print("show error: \(error)")
+					AlertView.show(title: "Get Weather Error", message: error.localizedDescription, action: "OK", on: self)
+					self.weatherInfoView.loadingView(show: false)
 					return
 				}
 				
 				if let weatherResponse = response {
 					print(weatherResponse)
 
-					self.tempLabel.text = String(Int(weatherResponse.main.temp)) + "℃"
+					self.weatherInfoView.tempLabel.text = String(Int(weatherResponse.main.temp)) + WeatherSign.celsius
+					self.weatherInfoView.minTempLabel.text = WeatherSign.minTemp + String(Int(weatherResponse.main.temp_min)) + WeatherSign.celsius
+					self.weatherInfoView.maxTempLabel.text = WeatherSign.maxTemp + String(Int(weatherResponse.main.temp_max)) + WeatherSign.celsius
 					
-					self.minTempLabel.text = "⤓" + String(Int(weatherResponse.main.temp_min)) + "℃"
-					self.maxTempLabel.text = "⤒" + String(Int(weatherResponse.main.temp_max)) + "℃"
-					
-					if let main: String = weatherResponse.weather.first?.main {
-						let randomInt = Int.random(in: 1..<4)
-						let date = NSDate(timeIntervalSince1970: TimeInterval(weatherResponse.dt))
-						let hour = Calendar.current.component(.hour, from: date as Date)
-						let day = hour > 6 && hour < 18
-						self.imageView.image = ImageStore().getImage(of: "\(main.lowercased())_\(day ? "day" : "night")\(randomInt)")
+					if let id: Int = weatherResponse.weather.first?.id, let main = weatherResponse.weather.first?.main {
+						self.weatherInfoView.conditionLabel.text = main
+						let condition = ImageStore.getWeatherImageName(id: id)
+						self.imageView.image = ImageStore.getRandomImage(condition: condition, timeZone: timeZone)
 					}
 					
+					self.locationManager?.stopUpdateLocation()
+					self.locationManager = nil
+				} else {
+					AlertView.show(title: "Unable to show response", message: nil, action: "OK", on: self)
 				}
-				
+				self.weatherInfoView.loadingView(show: false)
 			})
 			
 		})
 	}
-}
-
-public enum WeatherType: String {
-	case clear
-	case clouds
-	case drizzle
-	case rain
-	case snow
-	case storms
 }
 
 extension MainViewController: UITableViewDelegate {

@@ -17,14 +17,14 @@ enum NetworkError: Error {
 }
 
 class Network {
-	static func getCityWeather(id: Int, units: String, completionHandler: @escaping (WeatherResponse?, NetworkError?) -> Void) {
+	func getCityWeather(id: Int, units: String, completionHandler: @escaping (WeatherResponse?, NetworkError?) -> Void) {
 		let parameters: [String: String] = [
 			"id": String(id),
-			"appid": weatherAPI.appId,
+			"appid": WeatherAPI.appId,
 			"units": units,
 		]
 		
-		AF.request(weatherAPI.cityUrl, method: .get, parameters: parameters).responseDecodable(of: WeatherResponse.self) { response in
+		AF.request(WeatherAPI.cityUrl, method: .get, parameters: parameters).responseDecodable(of: WeatherResponse.self) { response in
 			if (response.error != nil) {
 				completionHandler(nil, .requestError)
 			} else {

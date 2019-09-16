@@ -11,11 +11,14 @@ target 'IDnow_WeatherApp' do
   target 'IDnow_WeatherAppTests' do
     inherit! :search_paths
     # Pods for testing
+		pod 'Alamofire', '~> 5.0.0-rc.2'
+		pod 'iOSSnapshotTestCase'
   end
 
   target 'IDnow_WeatherAppUITests' do
     inherit! :search_paths
     # Pods for testing
+		pod 'Alamofire', '~> 5.0.0-rc.2'
   end
 
 end

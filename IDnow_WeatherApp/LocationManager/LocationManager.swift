@@ -16,7 +16,7 @@ public enum CityDataError: Error {
 }
 
 protocol LocationManagerDelegate: class {
-	func updateCity(_ cityName: String, coord: Coordinate)
+	func updateCity(_ cityName: String, timeZone: TimeZone, coord: Coordinate)
 }
 
 class LocationManager: NSObject {
@@ -75,7 +75,7 @@ class LocationManager: NSObject {
 			let cord2 = CLLocation(latitude: cityCoord.lat, longitude: cityCoord.lon)
 			
 			let distance = cord1.distance(from: cord2)
-			if distance <= 7000 {
+			if distance <= WeatherAPI.distance {
 				return city
 			} else if equalLocationCoordinate(location1: cord1, location2: cord2) {
 				return city
@@ -86,14 +86,24 @@ class LocationManager: NSObject {
 	
 	func equalLocationCoordinate(location1: CLLocation, location2: CLLocation) -> Bool {
 		
-		let co1Lat: Double = (location1.coordinate.latitude * 10).rounded() / 10
-		let co1Lon: Double = (location1.coordinate.longitude * 10).rounded() / 10
+		let offset = WeatherAPI.locationOffset
+		let co1Lat: Double = (location1.coordinate.latitude * offset).rounded() / offset
+		let co1Lon: Double = (location1.coordinate.longitude * offset).rounded() / offset
 		
-		let co2Lat: Double = (location2.coordinate.latitude * 10).rounded() / 10
-		let co2Lon: Double = (location2.coordinate.longitude * 10).rounded() / 10
+		let co2Lat: Double = (location2.coordinate.latitude * offset).rounded() / offset
+		let co2Lon: Double = (location2.coordinate.longitude * offset).rounded() / offset
 		
 		return co1Lat == co2Lat && co1Lon == co2Lon
 
+	}
+	
+	func getTimeZoneDate(timeZone: TimeZone) -> Date {
+		let currentDate = Date()
+		let timezoneOffset =  timeZone.secondsFromGMT()
+		let epochDate = currentDate.timeIntervalSince1970
+		let timezoneEpochOffset = (epochDate + Double(timezoneOffset))
+		let timeZoneOffsetDate = Date(timeIntervalSince1970: timezoneEpochOffset)
+		return timeZoneOffsetDate
 	}
 }
 
@@ -105,11 +115,10 @@ extension LocationManager: CLLocationManagerDelegate {
 			guard let self = self else { return }
 			
 			if let place = placemarks?.first {
-				if let city = place.locality {
+				if let city = place.locality, let timeZone = place.timeZone {
 					let coord = Coordinate(lat: manager.location?.coordinate.latitude ?? 0, lon: manager.location?.coordinate.longitude ?? 0)
-					self.delegate?.updateCity(city, coord: coord)
+					self.delegate?.updateCity(city, timeZone: timeZone, coord: coord)
 				}
-				self.stopUpdateLocation()
 			}
 		}
 	}
