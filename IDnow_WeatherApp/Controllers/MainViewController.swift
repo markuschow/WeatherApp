@@ -155,8 +155,6 @@ extension MainViewController: LocationManagerDelegate {
 						self.imageView.image = ImageStore.getRandomImage(condition: condition, timeZone: timeZone)
 					}
 					
-					self.locationManager?.stopUpdateLocation()
-					self.locationManager = nil
 				} else {
 					AlertView.show(title: "Unable to show response", message: nil, action: "OK", on: self)
 				}

@@ -121,5 +121,7 @@ extension LocationManager: CLLocationManagerDelegate {
 				}
 			}
 		}
+		
+		self.stopUpdateLocation()
 	}
 }
