@@ -18,9 +18,12 @@ class MainViewController: UIViewController {
 	
 	var filteredCities = [City]()
 	
+	static let callIdentifier = "cityCell"
+	
 	struct ViewConfig {
 		static let padding: CGFloat = 10
 		static let containerViewHeight: CGFloat = 180
+		static let tableViewOffset: CGFloat = 130
 	}
 	
 	lazy var cities: [City] = {
@@ -60,8 +63,10 @@ class MainViewController: UIViewController {
 		let tableView = UITableView(frame: .zero, style: .plain)
 		tableView.translatesAutoresizingMaskIntoConstraints = false
 		tableView.setAccessibility(id: MainViewControllerAcessiblityIdentifier.tableViewViewIdentifier.rawValue, label: nil)
+		tableView.layer.cornerRadius = 10.0
 		tableView.dataSource = self
 		tableView.delegate = self
+		tableView.isHidden = true
 		return tableView
 	}()
 	
@@ -93,6 +98,7 @@ class MainViewController: UIViewController {
 	func setupViews() {
 	
 		self.view.addSubview(imageView)
+		self.view.addSubview(tableView)
 		self.view.addSubview(weatherInfoView)
 
 		setupSearchController()
@@ -112,6 +118,11 @@ class MainViewController: UIViewController {
 			imageView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
 			imageView.topAnchor.constraint(equalTo: view.topAnchor),
 			imageView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+
+			tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: ViewConfig.padding),
+			tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -ViewConfig.padding),
+			tableView.topAnchor.constraint(equalTo: view.topAnchor, constant: ViewConfig.tableViewOffset),
+			tableView.bottomAnchor.constraint(equalTo: weatherInfoView.topAnchor, constant: -ViewConfig.padding),
 
 			weatherInfoView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: ViewConfig.padding),
 			weatherInfoView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -ViewConfig.padding),
@@ -135,7 +146,8 @@ class MainViewController: UIViewController {
 		self.navigationController?.navigationBar.shadowImage = UIImage()
 		self.navigationController?.navigationBar.isTranslucent = true
 		self.navigationController?.view.backgroundColor = .clear
-		
+	
+		UITextField.appearance(whenContainedInInstancesOf: [UISearchBar.self]).defaultTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.white]
 	}
 	
 	// MARK: - Methods
@@ -152,27 +164,30 @@ class MainViewController: UIViewController {
 	
 	func filterContentForSearchText(_ searchText: String) {
 		
-		filteredCities = cities.filter({( city : City) -> Bool in
-			if !searchBarIsEmpty() {
+		self.filteredCities = self.cities.filter({( city : City) -> Bool in
+			if !self.searchBarIsEmpty() {
 				return city.name.lowercased().contains(searchText.lowercased())
 			}
 			return false
 		})
-		tableView.reloadData()
+		self.tableView.reloadData()
 	}
 	
 	func searchBarIsEmpty() -> Bool {
-		return searchController.searchBar.text?.isEmpty ?? true
+		return self.searchController.searchBar.text?.isEmpty ?? true
 	}
 	
 	func isFiltering() -> Bool {
-		let searchBarScopeIsFiltering = searchController.searchBar.selectedScopeButtonIndex != 0
-		return searchController.isActive && (!searchBarIsEmpty() || searchBarScopeIsFiltering)
+		return searchController.isActive && !searchBarIsEmpty()
 	}
 }
 
 extension MainViewController: UISearchBarDelegate {
-	
+	func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
+		filteredCities.removeAll()
+		tableView.reloadData()
+		tableView.isHidden = true
+	}
 }
 
 extension MainViewController: UISearchResultsUpdating {
@@ -250,7 +265,10 @@ extension MainViewController: LocationManagerDelegate {
 }
 
 extension MainViewController: UITableViewDelegate {
-	
+	func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+		//TODO: show city weather
+		
+	}
 }
 
 extension MainViewController: UITableViewDataSource {
@@ -259,11 +277,21 @@ extension MainViewController: UITableViewDataSource {
 	}
 	
 	func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+		if isFiltering() {
+			return filteredCities.count
+		}
 		return 0
 	}
 	
 	func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-		return UITableViewCell()
+		let cell = UITableViewCell(style: .default, reuseIdentifier: MainViewController.callIdentifier)
+		let city: City
+		if isFiltering() {
+			city = filteredCities[indexPath.row]
+			cell.textLabel?.text = city.name
+		}
+		tableView.isHidden = (filteredCities.count == 0)
+		return cell
 	}
 	
 	
@@ -274,3 +302,4 @@ extension UINavigationController {
 		return topViewController?.preferredStatusBarStyle ?? .lightContent
 	}
 }
+
