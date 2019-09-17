@@ -43,6 +43,7 @@ class MainViewController: UIViewController {
 		imageView.translatesAutoresizingMaskIntoConstraints = false
 		imageView.contentMode = .scaleAspectFill
 		imageView.setAccessibility(id: MainViewControllerAcessiblityIdentifier.backgroundImageIdentifier.rawValue, label: nil)
+		imageView.image = ImageStore.getRandomImage(condition: "clear", timeZone: TimeZone(identifier: "UTC")!)
 		return imageView
 	}()
 
@@ -134,11 +135,12 @@ class MainViewController: UIViewController {
 	}
 	
 	func setupSearchController() {
-		searchController.searchResultsUpdater = self
+//		searchController.searchResultsUpdater = self
 		searchController.obscuresBackgroundDuringPresentation = false
 		searchController.searchBar.placeholder = "Search City"
 		searchController.searchBar.searchBarStyle = .minimal
 		searchController.searchBar.tintColor = .white
+		searchController.searchBar.delegate = self
 		navigationItem.searchController = searchController
 		definesPresentationContext = true
 		
@@ -183,6 +185,11 @@ class MainViewController: UIViewController {
 }
 
 extension MainViewController: UISearchBarDelegate {
+	func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+		if let text = searchController.searchBar.text {
+			filterContentForSearchText(text)
+		}
+	}
 	func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
 		filteredCities.removeAll()
 		tableView.reloadData()
