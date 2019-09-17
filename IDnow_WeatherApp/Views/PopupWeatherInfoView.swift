@@ -24,6 +24,7 @@ class PopupWeatherInfoView: UIView {
 	}
 	
 	var weatherResponse: WeatherResponse?
+	var city: City?
 	
 	private var weatherInfoView: WeatherInfoView = {
 		let view = WeatherInfoView()
@@ -47,7 +48,8 @@ class PopupWeatherInfoView: UIView {
 		return button
 	}()
 	
-	init(weatherResponse: WeatherResponse) {
+	init(city: City, weatherResponse: WeatherResponse) {
+		self.city = city
 		self.weatherResponse = weatherResponse
 		super.init(frame: .zero)
 		
@@ -57,7 +59,7 @@ class PopupWeatherInfoView: UIView {
 		fatalError("init(coder:) has not been implemented")
 	}
 	
-	func setupViews(cityName: String) {
+	func setupViews() {
 		self.setAccessibility(id: PopupWeatherInfoViewAcessiblityIdentifier.popupViewIdentifier.rawValue, label: nil)
 		self.backgroundColor = UIColor.lightGray.withAlphaComponent(0.7)
 		self.layer.cornerRadius = 10
@@ -71,7 +73,7 @@ class PopupWeatherInfoView: UIView {
 		weatherInfoView.setupViews()
 		weatherInfoView.applyAutolayoutConstraints()
 		
-		weatherInfoView.cityLabel.text = cityName
+		weatherInfoView.cityLabel.text = self.city?.name
 		weatherInfoView.refreshButton.isHidden = true
 		
 		if let weather = self.weatherResponse {
@@ -108,7 +110,9 @@ class PopupWeatherInfoView: UIView {
 	}
 	
 	@objc func save(_ sender: UIButton) {
-		// TODO: Save city data
-		
+		if let city = self.city, let response = weatherResponse {
+			CoreDataManager.shared.saveCity(city: city, weatherResponse: response)
+			AlertView.show(title: "Saved City", message: nil, action: "OK")
+		}
 	}
 }

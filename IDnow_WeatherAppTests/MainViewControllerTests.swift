@@ -22,7 +22,7 @@ class MainViewControllerTests: TestCase {
 		let coord = Coordinate(lat: 22.285521, lon: 114.157692)
 		city = City(id: 1819729, name: "Hong Kong", country: "HK", coord: coord)
 
-		locationManager = MockLocationManager()
+		locationManager = MockLocationManager(delegate: self)
 		
 		network = MockNetwork()
     }
@@ -78,6 +78,13 @@ class MainViewControllerTests: TestCase {
 		
 		XCTAssertTrue(self.mainView.weatherInfoView.cityLabel.text == cityName, "updateCity should return correct city name")
 		XCTAssertTrue(self.mainView.weatherInfoView.tempLabel.text == nil, "updateCity should not return correct temp")
+		
+	}
+	
+}
+
+extension MainViewControllerTests: LocationManagerDelegate {
+	func updateCity(_ cityName: String, timeZone: TimeZone, coord: Coordinate) {
 		
 	}
 	

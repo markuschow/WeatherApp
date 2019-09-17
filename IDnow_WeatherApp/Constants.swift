@@ -35,3 +35,8 @@ struct WeatherCondition {
 	static let clouds = "clouds"
 	
 }
+
+struct Save {
+	static let weather = "weather"
+}
+

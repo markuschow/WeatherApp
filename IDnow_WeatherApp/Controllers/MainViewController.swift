@@ -10,7 +10,10 @@ import UIKit
 
 class MainViewController: UIViewController {
 
-	var locationManager: LocationManager?
+	lazy var locationManager: LocationManager = {
+		let manager = LocationManager(delegate: self)
+		return manager
+	}()
 	
 	var network: Network?
 	
@@ -95,15 +98,22 @@ class MainViewController: UIViewController {
 		
 		applyAutolayoutConstraints()
 		
-     	setupLocationManager()
+     	startLocationManager()
 		
     }
 
 	override func viewWillAppear(_ animated: Bool) {
 		super.viewWillAppear(animated)
 		
-		// TODO: load city data
-	
+		// load city data
+		if let savedWeather = WeatherInfoView.loadWeather() {
+			weatherInfoView.cityLabel.text = savedWeather.name
+			weatherInfoView.tempLabel.text = String(Int(savedWeather.temp)) + WeatherSign.celsius
+			weatherInfoView.minTempLabel.text = WeatherSign.minTemp + String(Int(savedWeather.minTemp)) + WeatherSign.celsius
+			weatherInfoView.maxTempLabel.text = WeatherSign.maxTemp + String(Int(savedWeather.maxTemp)) + WeatherSign.celsius
+			weatherInfoView.conditionLabel.text = savedWeather.condition
+		}
+		
 		refresh()
 	}
 	
@@ -174,11 +184,11 @@ class MainViewController: UIViewController {
 		UITextField.appearance(whenContainedInInstancesOf: [UISearchBar.self]).defaultTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.white]
 	}
 	
-	func showPopupWeatherInfoView(cityName: String, weatherResponse: WeatherResponse) {
-		let view = PopupWeatherInfoView(weatherResponse: weatherResponse)
+	func showPopupWeatherInfoView(city: City, weatherResponse: WeatherResponse) {
+		let view = PopupWeatherInfoView(city: city, weatherResponse: weatherResponse)
 		view.delegate = self
 		view.translatesAutoresizingMaskIntoConstraints = false
-		view.setupViews(cityName: cityName)
+		view.setupViews()
 		self.view.addSubview(view)
 		
 		popupWeatherInfoView = view
@@ -194,17 +204,13 @@ class MainViewController: UIViewController {
 	}
 	
 	// MARK: - Methods
-	func setupLocationManager() {
-		if locationManager == nil {
-			locationManager = LocationManager()
-			locationManager?.delegate = self
-		}
-		locationManager?.startUpdateLocation()
-		
+	func startLocationManager() {
+		locationManager.startUpdateLocation()
 	}
 	
 	@objc func showList() {
-		// TODO: show list
+		let listView = ListTableViewController(style: .plain)
+		self.navigationController?.pushViewController(listView, animated: true)
 	}
 	
 	// MARK: - Search methods
@@ -233,6 +239,7 @@ extension MainViewController: UISearchBarDelegate {
 	func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
 		if let text = searchController.searchBar.text {
 			filterContentForSearchText(text)
+			self.closePopupView()
 		}
 	}
 	func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
@@ -256,7 +263,7 @@ extension MainViewController: WeatherInfoViewDelegate {
 			network = Network()
 		}
 		weatherInfoView.loadingView(show: true)
-		self.setupLocationManager()
+		self.startLocationManager()
 	}
 }
 
@@ -271,11 +278,11 @@ extension MainViewController: LocationManagerDelegate {
 		
 		weatherInfoView.cityLabel.text = cityName
 		
-		locationManager?.getCityData(cities: cities, cityCoord: coord, completionHandler: {  [weak self] (city, error) in
+		locationManager.getCityData(cities: cities, cityCoord: coord, completionHandler: {  [weak self] (city, error) in
 			guard let self = self else { return }
 			
 			guard error == nil, let city = city else {
-				AlertView.show(title: "Get City Error", message: nil, action: "OK", on: self)
+				AlertView.show(title: "Get City Error", message: nil, action: "OK")
 				self.weatherInfoView.loadingView(show: false)
 				return
 			}
@@ -283,7 +290,7 @@ extension MainViewController: LocationManagerDelegate {
 			self.network?.getCityWeather(id: city.id, units: WeatherAPI.celsius, completionHandler: { (response, error) in
 				
 				if let error = error {
-					AlertView.show(title: "Get Weather Error", message: error.localizedDescription, action: "OK", on: self)
+					AlertView.show(title: "Get Weather Error", message: error.localizedDescription, action: "OK")
 					self.weatherInfoView.loadingView(show: false)
 					return
 				}
@@ -296,10 +303,11 @@ extension MainViewController: LocationManagerDelegate {
 						self.imageView.image = ImageStore.getRandomImage(condition: condition, timeZone: timeZone)
 					}
 					
-					// TODO: save city data
+					// save weather data
+					WeatherInfoView.saveWeather(cityId: city.id, cityName: cityName, weatherResponse: weatherResponse)
 					
 				} else {
-					AlertView.show(title: "Unable to show response", message: nil, action: "OK", on: self)
+					AlertView.show(title: "Unable to show response", message: nil, action: "OK")
 				}
 				self.weatherInfoView.loadingView(show: false)
 			})
@@ -317,14 +325,14 @@ extension MainViewController: UITableViewDelegate {
 		
 		self.network?.getCityWeather(id: city.id, units: WeatherAPI.celsius, completionHandler: { (response, error) in
 			if let error = error {
-				AlertView.show(title: "Get Weather Error", message: error.localizedDescription, action: "OK", on: self)
+				AlertView.show(title: "Get Weather Error", message: error.localizedDescription, action: "OK")
 				self.weatherInfoView.loadingView(show: false)
 				return
 			}
 			if let weatherResponse = response {
-				self.showPopupWeatherInfoView(cityName: city.name, weatherResponse: weatherResponse)
+				self.showPopupWeatherInfoView(city: city, weatherResponse: weatherResponse)
 			} else {
-				AlertView.show(title: "Unable to show response", message: nil, action: "OK", on: self)
+				AlertView.show(title: "Unable to show response", message: nil, action: "OK")
 			}
 		})
 	}

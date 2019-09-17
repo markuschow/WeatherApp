@@ -9,13 +9,12 @@
 import UIKit
 
 class AlertView {
-	static func show(title: String, message: String?, action: String?, on viewController: UIViewController?) {
-		guard let vc = viewController else { return }
+	static func show(title: String, message: String?, action: String?) {
 		
 		let alert = UIAlertController(title: title, message: message ?? "", preferredStyle: .alert)
 		let action = UIAlertAction(title: action ?? "OK", style: .default, handler: nil)
 		alert.addAction(action)
 		alert.view.setAccessibility(id: AlertViewAcessiblityIdentifier.alertViewIdentifier.rawValue, label: nil)
-		vc.present(alert, animated: true, completion: nil)
+		UIApplication.shared.keyWindow?.rootViewController?.present(alert, animated: true, completion: nil)
 	}
 }

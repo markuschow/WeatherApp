@@ -28,7 +28,8 @@ class LocationManager: NSObject {
 	
 	var cities: [City]?
 	
-	override init() {
+	init(delegate: LocationManagerDelegate) {
+		self.delegate = delegate
 		manager = CLLocationManager()
 		geoCoder = CLGeocoder()
 		super.init()

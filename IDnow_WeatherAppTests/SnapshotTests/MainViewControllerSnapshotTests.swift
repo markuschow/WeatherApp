@@ -48,8 +48,7 @@ class MainViewControllerSnapshotTests: FBSnapshotTestCase {
 	}
 	
 	func testPopupWeatherInfoView() {
-		let cityName = city.name
-		
+				
 		mainView.viewDidLoad()
 		mainView.imageView.image = ImageStore().getImage(of: "snow_day1")
 		
@@ -57,7 +56,7 @@ class MainViewControllerSnapshotTests: FBSnapshotTestCase {
 		network.returnCityWeather = true
 		network.getCityWeather(id: city.id, units: WeatherAPI.celsius) { (weatherResponse, error) in
 			if let response = weatherResponse {
-				self.mainView.showPopupWeatherInfoView(cityName: cityName, weatherResponse: response)
+				self.mainView.showPopupWeatherInfoView(city: self.city, weatherResponse: response)
 			}
 		}
 		let identifier = UIScreen.main.bounds

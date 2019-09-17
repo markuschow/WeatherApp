@@ -24,8 +24,8 @@ class MockMainViewController: MainViewController {
 		setupViewCall += 1
 	}
 	
-	override func setupLocationManager() {
-		super.setupLocationManager()
+	override func startLocationManager() {
+		super.startLocationManager()
 		setupLocationManagerCall += 1
 	}
 	

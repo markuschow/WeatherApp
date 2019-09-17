@@ -17,6 +17,7 @@ final class ImageStore {
 		static let close: String = "close"
 		static let save: String = "save"
 		static let list: String = "list"
+		static let delete: String = "delete"
 	}
 	
 	func getImage(of name: String) -> UIImage {
@@ -41,6 +42,10 @@ final class ImageStore {
 	
 	static func listImage() -> UIImage {
 		return ImageStore().getImage(of: ConfigStore.list)
+	}
+	
+	static func deleteImage() -> UIImage {
+		return ImageStore().getImage(of: ConfigStore.delete)
 	}
 }
 
