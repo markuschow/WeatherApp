@@ -38,7 +38,7 @@ class MainViewController: UIViewController {
 		}
 	}()
 	
-	private lazy var imageView: UIImageView = {
+	lazy var imageView: UIImageView = {
 		let imageView = UIImageView(frame: .zero)
 		imageView.translatesAutoresizingMaskIntoConstraints = false
 		imageView.contentMode = .scaleAspectFill
@@ -63,7 +63,7 @@ class MainViewController: UIViewController {
 	private lazy var tableView: UITableView = {
 		let tableView = UITableView(frame: .zero, style: .plain)
 		tableView.translatesAutoresizingMaskIntoConstraints = false
-		tableView.setAccessibility(id: MainViewControllerAcessiblityIdentifier.tableViewViewIdentifier.rawValue, label: nil)
+		tableView.setAccessibility(id: MainViewControllerAcessiblityIdentifier.tableViewIdentifier.rawValue, label: nil)
 		tableView.layer.cornerRadius = 10.0
 		tableView.dataSource = self
 		tableView.delegate = self
@@ -141,6 +141,9 @@ class MainViewController: UIViewController {
 		searchController.searchBar.searchBarStyle = .minimal
 		searchController.searchBar.tintColor = .white
 		searchController.searchBar.delegate = self
+		
+		searchController.searchBar.setAccessibility(id: MainViewControllerAcessiblityIdentifier.searchBarIdentifier.rawValue, label: nil)
+		
 		navigationItem.searchController = searchController
 		definesPresentationContext = true
 		

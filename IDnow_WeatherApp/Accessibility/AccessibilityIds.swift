@@ -12,7 +12,8 @@ enum MainViewControllerAcessiblityIdentifier: String {
 	case backgroundImageIdentifier = "mainView.backgroundImage"
 	case resultsTableViewIdentifier = "mainView.resultsTableView"
 	case weatherInfoViewIdentifier = "mainView.weatherInfoView"
-	case tableViewViewIdentifier = "mainView.tableView"
+	case tableViewIdentifier = "mainView.tableView"
+	case searchBarIdentifier = "mainView.searchBar"
 }
 
 enum WeatherViewAcessiblityIdentifier: String {

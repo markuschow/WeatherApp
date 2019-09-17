@@ -29,6 +29,13 @@ class MainViewControllerUITests: TestCase {
 		}
 	}
 	
+	func testShowSearchBar() {
+		let element = app.maps[MainViewControllerAcessiblityIdentifier.searchBarIdentifier.rawValue]
+		if element.waitForExistence(timeout: timeout) {
+			XCTAssert(element.exists)
+		}
+	}
+	
 	func testShowWeatherInfoView() {
 		var element = app.maps[MainViewControllerAcessiblityIdentifier.weatherInfoViewIdentifier.rawValue]
 		if element.waitForExistence(timeout: timeout) {

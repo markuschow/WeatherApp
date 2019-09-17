@@ -27,10 +27,18 @@ class MainViewControllerSnapshotTests: FBSnapshotTestCase {
 
 	func testMainViewAtLaunch() {
 		mainView.viewDidLoad()
-		
+		mainView.imageView.image = ImageStore().getImage(of: "clear_day1")
 		let identifier = UIScreen.main.bounds
 		FBSnapshotVerifyView(mainView.view, identifier: "\(#function)_\(identifier.width)_\(identifier.height)")
 
 	}
 
+	func testMainViewWithSearchBar() {
+		mainView.viewDidLoad()
+		mainView.imageView.image = ImageStore().getImage(of: "clear_night1")
+		mainView.setupSearchController()
+		let identifier = UIScreen.main.bounds
+		FBSnapshotVerifyView(mainView.view, identifier: "\(#function)_\(identifier.width)_\(identifier.height)")
+		
+	}
 }
