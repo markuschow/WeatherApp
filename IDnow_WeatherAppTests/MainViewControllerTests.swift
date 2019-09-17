@@ -80,5 +80,6 @@ class MainViewControllerTests: TestCase {
 		XCTAssertTrue(self.mainView.weatherInfoView.tempLabel.text == nil, "updateCity should not return correct temp")
 		
 	}
+	
 }
 

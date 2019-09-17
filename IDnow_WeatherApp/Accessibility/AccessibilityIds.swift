@@ -33,5 +33,9 @@ enum WeatherListControllerAcessiblityIdentifier: String {
 }
 
 enum AlertViewAcessiblityIdentifier: String {
-	case alertViewIdentifier = "alertView"
+	case alertViewIdentifier = "alertView.view"
+}
+
+enum PopupWeatherInfoViewAcessiblityIdentifier: String {
+	case popupViewIdentifier = "popupWeatherInfoView.view"
 }

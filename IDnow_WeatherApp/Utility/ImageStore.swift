@@ -14,6 +14,9 @@ final class ImageStore {
 	
 	private struct ConfigStore {
 		static let refresh: String = "refresh"
+		static let close: String = "close"
+		static let save: String = "save"
+		static let list: String = "list"
 	}
 	
 	func getImage(of name: String) -> UIImage {
@@ -28,6 +31,17 @@ final class ImageStore {
 		return ImageStore().getImage(of: ConfigStore.refresh)
 	}
 	
+	static func closeImage() -> UIImage {
+		return ImageStore().getImage(of: ConfigStore.close)
+	}
+	
+	static func saveImage() -> UIImage {
+		return ImageStore().getImage(of: ConfigStore.save)
+	}
+	
+	static func listImage() -> UIImage {
+		return ImageStore().getImage(of: ConfigStore.list)
+	}
 }
 
 extension ImageStore {

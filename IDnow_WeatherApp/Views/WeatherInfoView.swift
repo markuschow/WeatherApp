@@ -80,12 +80,13 @@ class WeatherInfoView: UIView {
 		label.translatesAutoresizingMaskIntoConstraints = false
 		label.numberOfLines = 0
 		label.font = UIFont.systemFont(ofSize: 20)
+		label.minimumScaleFactor = 0.2
 		label.textColor = .white
 		label.setAccessibility(id: WeatherViewAcessiblityIdentifier.conditionLabelIdentifier.rawValue, label: label.text)
 		return label
 	}()
 	
-	private lazy var refreshButton: UIButton = {
+	lazy var refreshButton: UIButton = {
 		let button = UIButton(frame: .zero)
 		button.translatesAutoresizingMaskIntoConstraints = false
 		button.addTarget(self, action: #selector(refreshAction(_:)), for: .touchUpInside)
@@ -150,7 +151,7 @@ class WeatherInfoView: UIView {
 			maxTempLabel.heightAnchor.constraint(equalToConstant: ViewConfig.minMaxTempLabelHeight),
 			
 			conditionLabel.leadingAnchor.constraint(equalTo: maxTempLabel.trailingAnchor, constant: ViewConfig.padding),
-			conditionLabel.widthAnchor.constraint(equalToConstant: ViewConfig.minMaxTempLabelWidth),
+			conditionLabel.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -ViewConfig.padding),
 			conditionLabel.bottomAnchor.constraint(equalTo: tempLabel.topAnchor, constant: -ViewConfig.padding),
 			conditionLabel.heightAnchor.constraint(equalToConstant: ViewConfig.minMaxTempLabelHeight),
 			
@@ -174,6 +175,25 @@ class WeatherInfoView: UIView {
 			loadingView.startAnimating()
 		} else {
 			loadingView.stopAnimating()
+		}
+	}
+	
+	func updateContent(weatherResponse: WeatherResponse) {
+		
+		if let temp = weatherResponse.main?.temp {
+			self.tempLabel.text = String(Int(temp)) + WeatherSign.celsius
+		}
+		
+		if let min = weatherResponse.main?.temp_min {
+			self.minTempLabel.text = WeatherSign.minTemp + String(Int(min)) + WeatherSign.celsius
+		}
+		
+		if let max = weatherResponse.main?.temp_max {
+			self.maxTempLabel.text = WeatherSign.maxTemp + String(Int(max)) + WeatherSign.celsius
+		}
+		
+		if let main = weatherResponse.weather?.first?.main {
+			self.conditionLabel.text = main
 		}
 	}
 }

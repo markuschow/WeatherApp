@@ -18,12 +18,15 @@ class MainViewController: UIViewController {
 	
 	var filteredCities = [City]()
 	
+	var popupWeatherInfoView: PopupWeatherInfoView?
+	
 	static let callIdentifier = "cityCell"
 	
 	struct ViewConfig {
 		static let padding: CGFloat = 10
 		static let containerViewHeight: CGFloat = 180
 		static let tableViewOffset: CGFloat = 130
+		static let popupViewHeight: CGFloat = 250
 	}
 	
 	lazy var cities: [City] = {
@@ -88,10 +91,16 @@ class MainViewController: UIViewController {
 		
     }
 
+	override func viewWillAppear(_ animated: Bool) {
+		super.viewWillAppear(animated)
+		
+		// TODO: load city data
+	
+		refresh()
+	}
+	
 	override func viewDidAppear(_ animated: Bool) {
 		super.viewDidAppear(animated)
-		
-		refresh()
 		
 	}
 	
@@ -135,7 +144,6 @@ class MainViewController: UIViewController {
 	}
 	
 	func setupSearchController() {
-//		searchController.searchResultsUpdater = self
 		searchController.obscuresBackgroundDuringPresentation = false
 		searchController.searchBar.placeholder = "Search City"
 		searchController.searchBar.searchBarStyle = .minimal
@@ -153,6 +161,25 @@ class MainViewController: UIViewController {
 		self.navigationController?.view.backgroundColor = .clear
 	
 		UITextField.appearance(whenContainedInInstancesOf: [UISearchBar.self]).defaultTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.white]
+	}
+	
+	func showPopupWeatherInfoView(cityName: String, weatherResponse: WeatherResponse) {
+		let view = PopupWeatherInfoView(weatherResponse: weatherResponse)
+		view.delegate = self
+		view.translatesAutoresizingMaskIntoConstraints = false
+		view.setupViews(cityName: cityName)
+		self.view.addSubview(view)
+		
+		popupWeatherInfoView = view
+		
+		NSLayoutConstraint.activate([
+			
+			view.leadingAnchor.constraint(equalTo: self.view.leadingAnchor, constant: ViewConfig.padding),
+			view.trailingAnchor.constraint(equalTo: self.view.trailingAnchor, constant: -ViewConfig.padding),
+			view.heightAnchor.constraint(equalToConstant: ViewConfig.popupViewHeight),
+			view.centerYAnchor.constraint(equalTo: self.view.centerYAnchor),
+			
+			])
 	}
 	
 	// MARK: - Methods
@@ -218,11 +245,14 @@ extension MainViewController: WeatherInfoViewDelegate {
 	}
 }
 
+extension MainViewController: PopupWeatherInfoViewDelegate {
+	func closePopupView() {
+		popupWeatherInfoView?.removeFromSuperview()
+	}
+}
+
 extension MainViewController: LocationManagerDelegate {
 	func updateCity(_ cityName: String, timeZone: TimeZone, coord: Coordinate) {
-		print("cityName: \(cityName)")
-		print("timeZone: \(timeZone)")
-		print("coord: \(coord)")
 		
 		weatherInfoView.cityLabel.text = cityName
 		
@@ -244,25 +274,14 @@ extension MainViewController: LocationManagerDelegate {
 				}
 				
 				if let weatherResponse = response {
-					print(weatherResponse)
-
-					if let temp = weatherResponse.main?.temp {
-						self.weatherInfoView.tempLabel.text = String(Int(temp)) + WeatherSign.celsius
-					}
+					self.weatherInfoView.updateContent(weatherResponse: weatherResponse)
 					
-					if let min = weatherResponse.main?.temp_min {
-						self.weatherInfoView.minTempLabel.text = WeatherSign.minTemp + String(Int(min)) + WeatherSign.celsius
-					}
-					
-					if let max = weatherResponse.main?.temp_max {
-						self.weatherInfoView.maxTempLabel.text = WeatherSign.maxTemp + String(Int(max)) + WeatherSign.celsius
-					}
-					
-					if let id: Int = weatherResponse.weather?.first?.id, let main = weatherResponse.weather?.first?.main {
-						self.weatherInfoView.conditionLabel.text = main
+					if let id: Int = weatherResponse.weather?.first?.id {
 						let condition = ImageStore.getWeatherImageName(id: id)
 						self.imageView.image = ImageStore.getRandomImage(condition: condition, timeZone: timeZone)
 					}
+					
+					// TODO: save city data
 					
 				} else {
 					AlertView.show(title: "Unable to show response", message: nil, action: "OK", on: self)
@@ -276,8 +295,23 @@ extension MainViewController: LocationManagerDelegate {
 
 extension MainViewController: UITableViewDelegate {
 	func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-		//TODO: show city weather
+		let city: City = filteredCities[indexPath.row]
 		
+		self.searchController.isActive = false
+		self.searchBarCancelButtonClicked(searchController.searchBar)
+		
+		self.network?.getCityWeather(id: city.id, units: WeatherAPI.celsius, completionHandler: { (response, error) in
+			if let error = error {
+				AlertView.show(title: "Get Weather Error", message: error.localizedDescription, action: "OK", on: self)
+				self.weatherInfoView.loadingView(show: false)
+				return
+			}
+			if let weatherResponse = response {
+				self.showPopupWeatherInfoView(cityName: city.name, weatherResponse: weatherResponse)
+			} else {
+				AlertView.show(title: "Unable to show response", message: nil, action: "OK", on: self)
+			}
+		})
 	}
 }
 

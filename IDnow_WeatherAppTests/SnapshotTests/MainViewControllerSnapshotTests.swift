@@ -12,11 +12,16 @@ import FBSnapshotTestCase
 class MainViewControllerSnapshotTests: FBSnapshotTestCase {
 
 	var mainView: MainViewController!
+	var city: City!
+	var network: MockNetwork!
 	
     override func setUp() {
 		super.setUp()
 		
         mainView = MainViewController()
+		
+		let coord = Coordinate(lat: 22.285521, lon: 114.157692)
+		city = City(id: 1819729, name: "Hong Kong", country: "HK", coord: coord)
 		
 		recordMode = false
     }
@@ -37,6 +42,24 @@ class MainViewControllerSnapshotTests: FBSnapshotTestCase {
 		mainView.viewDidLoad()
 		mainView.imageView.image = ImageStore().getImage(of: "clear_night1")
 		mainView.setupSearchController()
+		let identifier = UIScreen.main.bounds
+		FBSnapshotVerifyView(mainView.view, identifier: "\(#function)_\(identifier.width)_\(identifier.height)")
+		
+	}
+	
+	func testPopupWeatherInfoView() {
+		let cityName = city.name
+		
+		mainView.viewDidLoad()
+		mainView.imageView.image = ImageStore().getImage(of: "snow_day1")
+		
+		network = MockNetwork()
+		network.returnCityWeather = true
+		network.getCityWeather(id: city.id, units: WeatherAPI.celsius) { (weatherResponse, error) in
+			if let response = weatherResponse {
+				self.mainView.showPopupWeatherInfoView(cityName: cityName, weatherResponse: response)
+			}
+		}
 		let identifier = UIScreen.main.bounds
 		FBSnapshotVerifyView(mainView.view, identifier: "\(#function)_\(identifier.width)_\(identifier.height)")
 		
