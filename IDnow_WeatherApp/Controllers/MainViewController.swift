@@ -74,6 +74,14 @@ class MainViewController: UIViewController {
 		return tableView
 	}()
 	
+	private lazy var listButton: UIButton = {
+		let button = UIButton(type: .custom)
+		button.frame = CGRect(x: 0, y: 0, width: 30, height: 30)
+		button.setBackgroundImage(ImageStore.listImage(), for: .normal)
+		button.addTarget(self, action: #selector(showList), for: .touchUpInside)
+		return button
+	}()
+	
 	// MARK: - Views
 	
 	override var preferredStatusBarStyle: UIStatusBarStyle {
@@ -112,6 +120,9 @@ class MainViewController: UIViewController {
 		self.view.addSubview(weatherInfoView)
 
 		setupSearchController()
+		
+		navigationItem.rightBarButtonItem = UIBarButtonItem(customView: listButton)
+		
 	}
 	
 	private func applyAutolayoutConstraints() {
@@ -190,6 +201,10 @@ class MainViewController: UIViewController {
 		}
 		locationManager?.startUpdateLocation()
 		
+	}
+	
+	@objc func showList() {
+		// TODO: show list
 	}
 	
 	// MARK: - Search methods
