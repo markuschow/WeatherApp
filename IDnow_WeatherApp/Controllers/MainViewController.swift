@@ -10,10 +10,7 @@ import UIKit
 
 class MainViewController: UIViewController {
 
-	lazy var locationManager: LocationManager = {
-		let manager = LocationManager(delegate: self)
-		return manager
-	}()
+	var locationManager: LocationManager?
 	
 	var network: Network?
 	
@@ -106,7 +103,7 @@ class MainViewController: UIViewController {
 		super.viewWillAppear(animated)
 		
 		// load city data
-		if let savedWeather = WeatherInfoView.loadWeather() {
+		if let savedWeather = DataManager.loadWeather() {
 			weatherInfoView.cityLabel.text = savedWeather.name
 			weatherInfoView.tempLabel.text = String(Int(savedWeather.temp)) + WeatherSign.celsius
 			weatherInfoView.minTempLabel.text = WeatherSign.minTemp + String(Int(savedWeather.minTemp)) + WeatherSign.celsius
@@ -185,8 +182,8 @@ class MainViewController: UIViewController {
 	}
 	
 	func showPopupWeatherInfoView(city: City, weatherResponse: WeatherResponse) {
-		let view = PopupWeatherInfoView(city: city, weatherResponse: weatherResponse)
-		view.delegate = self
+		guard let savedCity = DataManager.getSavedCity(city: city, cityName: city.name, weatherResponse: weatherResponse) else { return }
+		let view = PopupWeatherInfoView(savedCity: savedCity, delegate: self)
 		view.translatesAutoresizingMaskIntoConstraints = false
 		view.setupViews()
 		self.view.addSubview(view)
@@ -205,7 +202,10 @@ class MainViewController: UIViewController {
 	
 	// MARK: - Methods
 	func startLocationManager() {
-		locationManager.startUpdateLocation()
+		if locationManager == nil {
+			locationManager = LocationManager(delegate: self)
+		}
+		locationManager?.startUpdateLocation()
 	}
 	
 	@objc func showList() {
@@ -274,11 +274,11 @@ extension MainViewController: PopupWeatherInfoViewDelegate {
 }
 
 extension MainViewController: LocationManagerDelegate {
-	func updateCity(_ cityName: String, timeZone: TimeZone, coord: Coordinate) {
+	func updateCity(cityName: String, timeZone: TimeZone, coord: Coordinate) {
 		
 		weatherInfoView.cityLabel.text = cityName
 		
-		locationManager.getCityData(cities: cities, cityCoord: coord, completionHandler: {  [weak self] (city, error) in
+		locationManager?.getCityData(cities: cities, cityCoord: coord, completionHandler: {  [weak self] (city, error) in
 			guard let self = self else { return }
 			
 			guard error == nil, let city = city else {
@@ -296,7 +296,12 @@ extension MainViewController: LocationManagerDelegate {
 				}
 				
 				if let weatherResponse = response {
-					self.weatherInfoView.updateContent(weatherResponse: weatherResponse)
+					
+					guard let savedCity = DataManager.getSavedCity(city: city, cityName: cityName, weatherResponse: weatherResponse) else {
+						return
+					}
+					
+					self.weatherInfoView.updateContent(savedCity: savedCity)
 					
 					if let id: Int = weatherResponse.weather?.first?.id {
 						let condition = ImageStore.getWeatherImageName(id: id)
@@ -304,7 +309,7 @@ extension MainViewController: LocationManagerDelegate {
 					}
 					
 					// save weather data
-					WeatherInfoView.saveWeather(cityId: city.id, cityName: cityName, weatherResponse: weatherResponse)
+					DataManager.saveWeather(cityId: city.id, cityName: cityName, weatherResponse: weatherResponse)
 					
 				} else {
 					AlertView.show(title: "Unable to show response", message: nil, action: "OK")

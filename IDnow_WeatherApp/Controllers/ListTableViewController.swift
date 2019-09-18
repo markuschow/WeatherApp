@@ -12,6 +12,13 @@ class ListTableViewController: UITableViewController {
 
 	var cities: [SavedCity]?
 	
+	var popupWeatherInfoView: PopupWeatherInfoView?
+	
+	struct ViewConfig {
+		static let padding: CGFloat = 10
+		static let popupViewHeight: CGFloat = 250
+	}
+	
 	private lazy var deleteAllButton: UIButton = {
 		let button = UIButton(type: .custom)
 		button.frame = CGRect(x: 0, y: 0, width: 30, height: 30)
@@ -32,7 +39,7 @@ class ListTableViewController: UITableViewController {
 		self.navigationController?.navigationBar.shadowImage = nil
 		self.navigationController?.navigationBar.isTranslucent = false
 
-		cities = CoreDataManager.shared.fetchCity()
+		cities = DataManager.shared.fetchCity()
 		tableView.reloadData()
 
 	}
@@ -48,9 +55,32 @@ class ListTableViewController: UITableViewController {
 	}
 	
 	@objc func deleteAll() {
-		CoreDataManager.shared.deleteAllCities()
+		DataManager.shared.deleteAllCities()
 		cities?.removeAll()
 		tableView.reloadData()
+	}
+	
+	func showPopupWeatherInfoView(savedCity: SavedCity) {
+		if (popupWeatherInfoView != nil) {
+			popupWeatherInfoView?.removeFromSuperview()
+		}
+		let view = PopupWeatherInfoView(savedCity: savedCity, delegate: self)
+		view.translatesAutoresizingMaskIntoConstraints = false
+		view.setupViews()
+		
+		self.view.addSubview(view)
+		
+		popupWeatherInfoView = view
+		popupWeatherInfoView?.saveButton.isHidden = true
+		
+		NSLayoutConstraint.activate([
+			
+			view.leadingAnchor.constraint(equalTo: self.view.leadingAnchor, constant: ViewConfig.padding),
+			view.heightAnchor.constraint(equalToConstant: ViewConfig.popupViewHeight),
+			view.centerYAnchor.constraint(equalTo: self.view.centerYAnchor),
+			view.widthAnchor.constraint(equalTo: self.view.widthAnchor, constant: -ViewConfig.padding * 2),
+			
+			])
 	}
 	
     // MARK: - Table view data source
@@ -64,11 +94,11 @@ class ListTableViewController: UITableViewController {
     }
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-		let cell = UITableViewCell(style: .default, reuseIdentifier: MainViewController.callIdentifier)
+		let cell = UITableViewCell(style: .subtitle, reuseIdentifier: MainViewController.callIdentifier)
 
 		if let city = cities?[indexPath.row] {
 			cell.textLabel?.text = city.name
-			cell.detailTextLabel?.text = String(Int(city.temp)) + WeatherSign.celsius
+			cell.detailTextLabel?.text = String(Int(city.temp)) + WeatherSign.celsius + " - " + city.condition
 		}
         return cell
     }
@@ -84,11 +114,23 @@ class ListTableViewController: UITableViewController {
         if editingStyle == .delete {
             // Delete the row from the data source
 			if let city = cities?[indexPath.row] {
-				CoreDataManager.shared.deleteCity(cityId: city.id)
+				DataManager.shared.deleteCity(cityId: city.id)
 			}
 			cities?.remove(at: indexPath.row)
 			tableView.reloadData()
         }
     }
+	
+	override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+		if let savedCity: SavedCity = cities?[indexPath.row] {
+			showPopupWeatherInfoView(savedCity: savedCity)
+		}
+	}
 
+}
+
+extension ListTableViewController: PopupWeatherInfoViewDelegate {
+	func closePopupView() {
+		popupWeatherInfoView?.removeFromSuperview()
+	}
 }
