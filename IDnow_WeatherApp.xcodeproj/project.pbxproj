@@ -43,10 +43,12 @@
 		5CC3783A2330053E00FF8B7F /* ReferenceImages_64 in Resources */ = {isa = PBXBuildFile; fileRef = 5CC378392330053E00FF8B7F /* ReferenceImages_64 */; };
 		5CC3783C2330B6D600FF8B7F /* PopupWeatherInfoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CC3783B2330B6D600FF8B7F /* PopupWeatherInfoView.swift */; };
 		5CC3783E2330DEC800FF8B7F /* ListTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CC3783D2330DEC800FF8B7F /* ListTableViewController.swift */; };
-		5CC37840233132FF00FF8B7F /* CoreDataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CC3783F233132FF00FF8B7F /* CoreDataManager.swift */; };
+		5CC37840233132FF00FF8B7F /* DataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CC3783F233132FF00FF8B7F /* DataManager.swift */; };
 		5CC3785123314F4E00FF8B7F /* SavedWeather.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CC37842233149B100FF8B7F /* SavedWeather.swift */; };
 		5CC3785323315D0100FF8B7F /* SavedCity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CC3785223315D0100FF8B7F /* SavedCity.swift */; };
 		5CC378552331654100FF8B7F /* ListTableViewControllerSnapshotTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CC378542331654100FF8B7F /* ListTableViewControllerSnapshotTests.swift */; };
+		5CC37859233167DF00FF8B7F /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 5CC37858233167DF00FF8B7F /* README.md */; };
+		5CC3785B2331D76300FF8B7F /* SnapshotTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CC3785A2331D76300FF8B7F /* SnapshotTestCase.swift */; };
 		67BA46AE2B83C2FC779856BE /* Pods_IDnow_WeatherAppUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C6C80D7D2FFE44EE5E0CE9BA /* Pods_IDnow_WeatherAppUITests.framework */; };
 		7B37981442C561C427C4CD31 /* Pods_IDnow_WeatherApp.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6EB87C0569381BFB4A4A6261 /* Pods_IDnow_WeatherApp.framework */; };
 		C1210675F0C8D6267B927B51 /* Pods_IDnow_WeatherAppTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FB1CDA3DEF8CE8BE49AD5B59 /* Pods_IDnow_WeatherAppTests.framework */; };
@@ -115,10 +117,12 @@
 		5CC378392330053E00FF8B7F /* ReferenceImages_64 */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ReferenceImages_64; path = IDnow_WeatherAppTests/ReferenceImages_64; sourceTree = SOURCE_ROOT; };
 		5CC3783B2330B6D600FF8B7F /* PopupWeatherInfoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopupWeatherInfoView.swift; sourceTree = "<group>"; };
 		5CC3783D2330DEC800FF8B7F /* ListTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListTableViewController.swift; sourceTree = "<group>"; };
-		5CC3783F233132FF00FF8B7F /* CoreDataManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataManager.swift; sourceTree = "<group>"; };
+		5CC3783F233132FF00FF8B7F /* DataManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataManager.swift; sourceTree = "<group>"; };
 		5CC37842233149B100FF8B7F /* SavedWeather.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavedWeather.swift; sourceTree = "<group>"; };
 		5CC3785223315D0100FF8B7F /* SavedCity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavedCity.swift; sourceTree = "<group>"; };
 		5CC378542331654100FF8B7F /* ListTableViewControllerSnapshotTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListTableViewControllerSnapshotTests.swift; sourceTree = "<group>"; };
+		5CC37858233167DF00FF8B7F /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		5CC3785A2331D76300FF8B7F /* SnapshotTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnapshotTestCase.swift; sourceTree = "<group>"; };
 		6EB87C0569381BFB4A4A6261 /* Pods_IDnow_WeatherApp.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_IDnow_WeatherApp.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		86B9D8B395D3579BE709F721 /* Pods-IDnow_WeatherApp.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-IDnow_WeatherApp.release.xcconfig"; path = "Target Support Files/Pods-IDnow_WeatherApp/Pods-IDnow_WeatherApp.release.xcconfig"; sourceTree = "<group>"; };
 		A848582BD4EE00AD64BADD5C /* Pods-IDnow_WeatherAppUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-IDnow_WeatherAppUITests.debug.xcconfig"; path = "Target Support Files/Pods-IDnow_WeatherAppUITests/Pods-IDnow_WeatherAppUITests.debug.xcconfig"; sourceTree = "<group>"; };
@@ -189,6 +193,7 @@
 		5C09430C232BF3D50071917E = {
 			isa = PBXGroup;
 			children = (
+				5CC37858233167DF00FF8B7F /* README.md */,
 				5C9247CE232D4FAD007B40FF /* Default-568h@2x.png */,
 				5C094317232BF3D50071917E /* IDnow_WeatherApp */,
 				5C09432F232BF3D60071917E /* IDnow_WeatherAppTests */,
@@ -257,7 +262,7 @@
 		5C9247B4232CBCC2007B40FF /* CoreData */ = {
 			isa = PBXGroup;
 			children = (
-				5CC3783F233132FF00FF8B7F /* CoreDataManager.swift */,
+				5CC3783F233132FF00FF8B7F /* DataManager.swift */,
 				5C09431F232BF3D50071917E /* IDnow_WeatherApp.xcdatamodeld */,
 			);
 			path = CoreData;
@@ -352,6 +357,7 @@
 				5CC378392330053E00FF8B7F /* ReferenceImages_64 */,
 				5CC37836233002F000FF8B7F /* MainViewControllerSnapshotTests.swift */,
 				5CC378542331654100FF8B7F /* ListTableViewControllerSnapshotTests.swift */,
+				5CC3785A2331D76300FF8B7F /* SnapshotTestCase.swift */,
 			);
 			path = SnapshotTests;
 			sourceTree = "<group>";
@@ -471,6 +477,7 @@
 				5C094326232BF3D60071917E /* LaunchScreen.storyboard in Resources */,
 				5C9247BE232D2ED9007B40FF /* citylist.json in Resources */,
 				5C9247D5232E484A007B40FF /* weather.json in Resources */,
+				5CC37859233167DF00FF8B7F /* README.md in Resources */,
 				5C094323232BF3D60071917E /* Assets.xcassets in Resources */,
 				5C9247CF232D4FAD007B40FF /* Default-568h@2x.png in Resources */,
 				5C09431E232BF3D50071917E /* Main.storyboard in Resources */,
@@ -645,7 +652,7 @@
 				5C9247C3232D433C007B40FF /* Constants.swift in Sources */,
 				5C094321232BF3D50071917E /* IDnow_WeatherApp.xcdatamodeld in Sources */,
 				5C9247C5232D4B3B007B40FF /* LocationManager.swift in Sources */,
-				5CC37840233132FF00FF8B7F /* CoreDataManager.swift in Sources */,
+				5CC37840233132FF00FF8B7F /* DataManager.swift in Sources */,
 				5C9247D9232E86E1007B40FF /* WeatherResponse.swift in Sources */,
 				5CC3785323315D0100FF8B7F /* SavedCity.swift in Sources */,
 				5C9247CD232D4F38007B40FF /* Coordinate.swift in Sources */,
@@ -671,6 +678,7 @@
 				5CC37833232FFDC400FF8B7F /* TestCase.swift in Sources */,
 				5CC3781D232FD1A100FF8B7F /* MainViewControllerTests.swift in Sources */,
 				5CC37837233002F000FF8B7F /* MainViewControllerSnapshotTests.swift in Sources */,
+				5CC3785B2331D76300FF8B7F /* SnapshotTestCase.swift in Sources */,
 				5CC3781F232FD20B00FF8B7F /* MockMainViewController.swift in Sources */,
 				5CC37822232FD2E100FF8B7F /* MockLocationManager.swift in Sources */,
 			);

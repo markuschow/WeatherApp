@@ -1,5 +1,5 @@
 //
-//  CoreDataManager.swift
+//  DataManager.swift
 //  IDnow_WeatherApp
 //
 //  Created by Markus Chow on 17/9/2019.
@@ -9,9 +9,9 @@
 import UIKit
 import CoreData
 
-class CoreDataManager {
+class DataManager {
 	
-	static let shared = CoreDataManager()
+	static let shared = DataManager()
 	
 	var cityData: [NSManagedObject] = []
 	var weatherData: NSManagedObject?
@@ -26,37 +26,50 @@ class CoreDataManager {
 		return container
 	}()
 	
-	func saveCity(city: City, weatherResponse: WeatherResponse) {
+	func checkExists(id: Int) -> Bool {
+		let managedContext = persistentContainer.viewContext
+		let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: "CityData")
+		fetchRequest.predicate = NSPredicate(format: "id = %d", id)
+		
+		var results: [NSManagedObject] = []
+		
+		do {
+			results = try managedContext.fetch(fetchRequest)
+		} catch {
+			print("error executing fetch request: \(error)")
+		}
+		
+		return results.count > 0
+	}
+	
+	func saveCity(savedCity: SavedCity, completionHandler: @escaping (Bool, NSError?) -> Void) {
+		
+		guard !checkExists(id: savedCity.id) else {
+			completionHandler(false, nil)
+			return
+		}
+		
 		let managedContext = persistentContainer.viewContext
 		if let entity = NSEntityDescription.entity(forEntityName: "CityData", in: managedContext) {
 			let cityData = NSManagedObject(entity: entity, insertInto: managedContext)
 			
-			cityData.setValue(city.id, forKeyPath: "id")
-			cityData.setValue(city.name, forKeyPath: "name")
-			cityData.setValue(city.country, forKeyPath: "country")
-			cityData.setValue(city.coord.lat, forKeyPath: "lat")
-			cityData.setValue(city.coord.lon, forKeyPath: "lon")
+			cityData.setValue(savedCity.id, forKeyPath: "id")
+			cityData.setValue(savedCity.name, forKeyPath: "name")
+			cityData.setValue(savedCity.country, forKeyPath: "country")
+			cityData.setValue(savedCity.lat, forKeyPath: "lat")
+			cityData.setValue(savedCity.lon, forKeyPath: "lon")
 			
-			if let temp = weatherResponse.main?.temp {
-				cityData.setValue(temp, forKeyPath: "temp")
-			}
-			
-			if let min = weatherResponse.main?.temp_min {
-				cityData.setValue(min, forKeyPath: "minTemp")
-			}
-			
-			if let max = weatherResponse.main?.temp_max {
-				cityData.setValue(max, forKeyPath: "maxTemp")
-			}
-			
-			if let condition = weatherResponse.weather?.first?.main {
-				cityData.setValue(condition, forKeyPath: "condition")
-			}
+			cityData.setValue(savedCity.temp, forKeyPath: "temp")
+			cityData.setValue(savedCity.minTemp, forKeyPath: "minTemp")
+			cityData.setValue(savedCity.maxTemp, forKeyPath: "maxTemp")
+			cityData.setValue(savedCity.condition, forKeyPath: "condition")
 			
 			do {
 				try managedContext.save()
+				completionHandler(true, nil)
 			} catch let error as NSError {
 				print("Could not save. \(error), \(error.userInfo)")
+				completionHandler(false, error)
 			}
 		}
 	}
@@ -127,5 +140,42 @@ class CoreDataManager {
 		}
 	}
 	
+	static func saveWeather(cityId: Int, cityName: String, weatherResponse: WeatherResponse) {
+		if let temp = weatherResponse.main?.temp,
+			let min = weatherResponse.main?.temp_min,
+			let max = weatherResponse.main?.temp_max,
+			let condition = weatherResponse.weather?.first?.main {
+			
+			let savedWeather = SavedWeather(id: cityId, name: cityName, temp: temp, minTemp: min, maxTemp: max, condition: condition)
+			
+			if let savedWeather = try? JSONEncoder().encode(savedWeather) {
+				UserDefaults.standard.set(savedWeather, forKey: Save.weather)
+			}
+		}
+	}
 	
+	static func loadWeather() -> SavedWeather? {
+		if let savedWeather = UserDefaults.standard.object(forKey: Save.weather) as? Data {
+			if let loadedWeather = try? JSONDecoder().decode(SavedWeather.self, from: savedWeather) {
+				return loadedWeather
+			}
+		}
+		return nil
+	}
+
+	static func getSavedCity(city: City, cityName: String, weatherResponse: WeatherResponse) -> SavedCity? {
+		if let temp = weatherResponse.main?.temp,
+			let min = weatherResponse.main?.temp_min,
+			let max = weatherResponse.main?.temp_max,
+			let condition = weatherResponse.weather?.first?.main {
+			
+			let savedCity = SavedCity(id: city.id, name: cityName, country: city.country,
+									  lat: city.coord.lat, lon: city.coord.lon,
+									  temp: temp, minTemp: min, maxTemp: max, condition: condition)
+			
+			return savedCity
+			
+		}
+		return nil
+	}
 }

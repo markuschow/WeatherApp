@@ -9,7 +9,7 @@
 import FBSnapshotTestCase
 @testable import IDnow_WeatherApp
 
-class MainViewControllerSnapshotTests: FBSnapshotTestCase {
+class MainViewControllerSnapshotTests: SnapshotTestcase {
 
 	var mainView: MainViewController!
 	var city: City!
@@ -23,7 +23,6 @@ class MainViewControllerSnapshotTests: FBSnapshotTestCase {
 		let coord = Coordinate(lat: 22.285521, lon: 114.157692)
 		city = City(id: 1819729, name: "Hong Kong", country: "HK", coord: coord)
 		
-		recordMode = false
     }
 
     override func tearDown() {

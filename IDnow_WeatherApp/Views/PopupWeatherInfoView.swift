@@ -16,15 +16,14 @@ class PopupWeatherInfoView: UIView {
 	
 	weak var delegate: PopupWeatherInfoViewDelegate?
 	
+	var savedCity: SavedCity?
+	
 	struct ViewConfig {
 		static let topPadding: CGFloat = 40
 		static let padding: CGFloat = 10
 		static let buttonTopPadding: CGFloat = 5
 		static let buttonSize: CGFloat = 30
 	}
-	
-	var weatherResponse: WeatherResponse?
-	var city: City?
 	
 	private var weatherInfoView: WeatherInfoView = {
 		let view = WeatherInfoView()
@@ -40,7 +39,7 @@ class PopupWeatherInfoView: UIView {
 		return button
 	}()
 	
-	private var saveButton: UIButton = {
+	var saveButton: UIButton = {
 		let button = UIButton(type: .custom)
 		button.translatesAutoresizingMaskIntoConstraints = false
 		button.setBackgroundImage(ImageStore.saveImage(), for: .normal)
@@ -48,9 +47,9 @@ class PopupWeatherInfoView: UIView {
 		return button
 	}()
 	
-	init(city: City, weatherResponse: WeatherResponse) {
-		self.city = city
-		self.weatherResponse = weatherResponse
+	init(savedCity: SavedCity, delegate: PopupWeatherInfoViewDelegate) {
+		self.delegate = delegate
+		self.savedCity = savedCity
 		super.init(frame: .zero)
 		
 	}
@@ -73,11 +72,10 @@ class PopupWeatherInfoView: UIView {
 		weatherInfoView.setupViews()
 		weatherInfoView.applyAutolayoutConstraints()
 		
-		weatherInfoView.cityLabel.text = self.city?.name
 		weatherInfoView.refreshButton.isHidden = true
 		
-		if let weather = self.weatherResponse {
-			weatherInfoView.updateContent(weatherResponse: weather)
+		if let savedCity = self.savedCity {
+			weatherInfoView.updateContent(savedCity: savedCity)
 		}
 		
 	}
@@ -110,9 +108,19 @@ class PopupWeatherInfoView: UIView {
 	}
 	
 	@objc func save(_ sender: UIButton) {
-		if let city = self.city, let response = weatherResponse {
-			CoreDataManager.shared.saveCity(city: city, weatherResponse: response)
-			AlertView.show(title: "Saved City", message: nil, action: "OK")
+		if let savedCity = self.savedCity {
+			DataManager.shared.saveCity(savedCity: savedCity) { (success, error) in
+				if let error = error {
+					AlertView.show(title: "Saved City Error", message: error.localizedDescription, action: "OK")
+				}
+			
+				if success {
+					AlertView.show(title: "Saved City", message: nil, action: "OK")
+				} else {
+					AlertView.show(title: "City Exist", message: nil, action: "OK")
+				}
+				
+			}
 		}
 	}
 }

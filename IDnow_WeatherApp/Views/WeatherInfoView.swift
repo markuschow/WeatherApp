@@ -178,45 +178,11 @@ class WeatherInfoView: UIView {
 		}
 	}
 	
-	func updateContent(weatherResponse: WeatherResponse) {
-		
-		if let temp = weatherResponse.main?.temp {
-			self.tempLabel.text = String(Int(temp)) + WeatherSign.celsius
-		}
-		
-		if let min = weatherResponse.main?.temp_min {
-			self.minTempLabel.text = WeatherSign.minTemp + String(Int(min)) + WeatherSign.celsius
-		}
-		
-		if let max = weatherResponse.main?.temp_max {
-			self.maxTempLabel.text = WeatherSign.maxTemp + String(Int(max)) + WeatherSign.celsius
-		}
-		
-		if let main = weatherResponse.weather?.first?.main {
-			self.conditionLabel.text = main
-		}
-	}
-	
-	static func saveWeather(cityId: Int, cityName: String, weatherResponse: WeatherResponse) {
-		if let temp = weatherResponse.main?.temp,
-			let min = weatherResponse.main?.temp_min,
-			let max = weatherResponse.main?.temp_max,
-			let condition = weatherResponse.weather?.first?.main {
-			
-			let savedWeather = SavedWeather(id: cityId, name: cityName, temp: temp, minTemp: min, maxTemp: max, condition: condition)
-			
-			if let savedWeather = try? JSONEncoder().encode(savedWeather) {
-				UserDefaults.standard.set(savedWeather, forKey: Save.weather)
-			}
-		}
-	}
-	
-	static func loadWeather() -> SavedWeather? {
-		if let savedWeather = UserDefaults.standard.object(forKey: Save.weather) as? Data {
-			if let loadedWeather = try? JSONDecoder().decode(SavedWeather.self, from: savedWeather) {
-				return loadedWeather
-			}
-		}
-		return nil
+	func updateContent(savedCity: SavedCity) {
+		self.cityLabel.text = savedCity.name
+		self.tempLabel.text = String(Int(savedCity.temp)) + WeatherSign.celsius
+		self.minTempLabel.text = WeatherSign.minTemp + String(Int(savedCity.minTemp)) + WeatherSign.celsius
+		self.maxTempLabel.text = WeatherSign.maxTemp + String(Int(savedCity.maxTemp)) + WeatherSign.celsius
+		self.conditionLabel.text = savedCity.condition
 	}
 }

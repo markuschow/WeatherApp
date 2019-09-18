@@ -16,7 +16,7 @@ public enum CityDataError: Error {
 }
 
 protocol LocationManagerDelegate: class {
-	func updateCity(_ cityName: String, timeZone: TimeZone, coord: Coordinate)
+	func updateCity(cityName: String, timeZone: TimeZone, coord: Coordinate)
 }
 
 class LocationManager: NSObject {
@@ -108,9 +108,9 @@ extension LocationManager: CLLocationManagerDelegate {
 			guard let self = self else { return }
 			
 			if let place = placemarks?.first {
-				if let city = place.locality, let timeZone = place.timeZone {
+				if let cityName = place.locality, let timeZone = place.timeZone {
 					let coord = Coordinate(lat: manager.location?.coordinate.latitude ?? 0, lon: manager.location?.coordinate.longitude ?? 0)
-					self.delegate?.updateCity(city, timeZone: timeZone, coord: coord)
+					self.delegate?.updateCity(cityName: cityName, timeZone: timeZone, coord: coord)
 				}
 			}
 		}
