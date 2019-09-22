@@ -536,7 +536,7 @@
 			inputFileListPaths = (
 			);
 			inputPaths = (
-				"${SRCROOT}/Pods/Target Support Files/Pods-IDnow_WeatherApp/Pods-IDnow_WeatherApp-frameworks.sh",
+				"${PODS_ROOT}/Target Support Files/Pods-IDnow_WeatherApp/Pods-IDnow_WeatherApp-frameworks.sh",
 				"${BUILT_PRODUCTS_DIR}/Alamofire/Alamofire.framework",
 			);
 			name = "[CP] Embed Pods Frameworks";
@@ -547,7 +547,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-IDnow_WeatherApp/Pods-IDnow_WeatherApp-frameworks.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-IDnow_WeatherApp/Pods-IDnow_WeatherApp-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		3844311B8782A64C12119A0B /* [CP] Check Pods Manifest.lock */ = {
@@ -602,7 +602,7 @@
 			inputFileListPaths = (
 			);
 			inputPaths = (
-				"${SRCROOT}/Pods/Target Support Files/Pods-IDnow_WeatherAppUITests/Pods-IDnow_WeatherAppUITests-frameworks.sh",
+				"${PODS_ROOT}/Target Support Files/Pods-IDnow_WeatherAppUITests/Pods-IDnow_WeatherAppUITests-frameworks.sh",
 				"${BUILT_PRODUCTS_DIR}/Alamofire/Alamofire.framework",
 			);
 			name = "[CP] Embed Pods Frameworks";
@@ -613,7 +613,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-IDnow_WeatherAppUITests/Pods-IDnow_WeatherAppUITests-frameworks.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-IDnow_WeatherAppUITests/Pods-IDnow_WeatherAppUITests-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		F60F5D30383988615D74165E /* [CP] Embed Pods Frameworks */ = {
@@ -624,7 +624,7 @@
 			inputFileListPaths = (
 			);
 			inputPaths = (
-				"${SRCROOT}/Pods/Target Support Files/Pods-IDnow_WeatherAppTests/Pods-IDnow_WeatherAppTests-frameworks.sh",
+				"${PODS_ROOT}/Target Support Files/Pods-IDnow_WeatherAppTests/Pods-IDnow_WeatherAppTests-frameworks.sh",
 				"${BUILT_PRODUCTS_DIR}/Alamofire/Alamofire.framework",
 				"${BUILT_PRODUCTS_DIR}/iOSSnapshotTestCase/FBSnapshotTestCase.framework",
 			);
@@ -637,7 +637,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-IDnow_WeatherAppTests/Pods-IDnow_WeatherAppTests-frameworks.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-IDnow_WeatherAppTests/Pods-IDnow_WeatherAppTests-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -847,7 +847,7 @@
 		};
 		5C094341232BF3D60071917E /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 21A863769CC38742FBB8E094 /* Pods-IDnow_WeatherApp.debug.xcconfig */;
+			baseConfigurationReference = 2E873065B7AE6648240D88D1 /* Pods-IDnow_WeatherApp.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
@@ -866,7 +866,7 @@
 		};
 		5C094342232BF3D60071917E /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = BF5C70930C82E5139A195CE0 /* Pods-IDnow_WeatherApp.release.xcconfig */;
+			baseConfigurationReference = 86B9D8B395D3579BE709F721 /* Pods-IDnow_WeatherApp.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
@@ -885,7 +885,7 @@
 		};
 		5C094344232BF3D60071917E /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 30E44235C3BDB77E5D72C455 /* Pods-IDnow_WeatherAppTests.debug.xcconfig */;
+			baseConfigurationReference = 14C3F4264E9386A04C5C1B95 /* Pods-IDnow_WeatherAppTests.debug.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CLANG_ENABLE_MODULES = YES;
@@ -908,7 +908,7 @@
 		};
 		5C094345232BF3D60071917E /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = FFB5EA0739F69909D74CC94A /* Pods-IDnow_WeatherAppTests.release.xcconfig */;
+			baseConfigurationReference = 4B59B8C4190EF54403FC0E26 /* Pods-IDnow_WeatherAppTests.release.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CLANG_ENABLE_MODULES = YES;
@@ -930,7 +930,7 @@
 		};
 		5C094347232BF3D60071917E /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 1BB8288D7A752ED32F131CC5 /* Pods-IDnow_WeatherAppUITests.debug.xcconfig */;
+			baseConfigurationReference = A848582BD4EE00AD64BADD5C /* Pods-IDnow_WeatherAppUITests.debug.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -952,7 +952,7 @@
 		};
 		5C094348232BF3D60071917E /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = ED46A07706CBB20ED60763BD /* Pods-IDnow_WeatherAppUITests.release.xcconfig */;
+			baseConfigurationReference = 0A4DA028517F0E10737052D9 /* Pods-IDnow_WeatherAppUITests.release.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
