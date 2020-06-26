@@ -36,22 +36,9 @@ class ListTableViewController: UITableViewController {
 	override func viewWillAppear(_ animated: Bool) {
 		super.viewWillAppear(animated)
 		
-		self.navigationController?.navigationBar.shadowImage = nil
-		self.navigationController?.navigationBar.isTranslucent = false
-
 		cities = DataManager.shared.fetchCity()
 		tableView.reloadData()
 
-	}
-
-	override func viewWillDisappear(_ animated: Bool) {
-		self.navigationController?.navigationBar.setBackgroundImage(UIImage(), for: UIBarMetrics.default)
-		self.navigationController?.navigationBar.shadowImage = UIImage()
-		self.navigationController?.navigationBar.isTranslucent = true
-		self.navigationController?.view.backgroundColor = .clear
-
-		super.viewWillDisappear(animated)
-		
 	}
 	
 	@objc func deleteAll() {
@@ -61,26 +48,11 @@ class ListTableViewController: UITableViewController {
 	}
 	
 	func showPopupWeatherInfoView(savedCity: SavedCity) {
-		if (popupWeatherInfoView != nil) {
-			popupWeatherInfoView?.removeFromSuperview()
-		}
-		let view = PopupWeatherInfoView(savedCity: savedCity, delegate: self)
-		view.translatesAutoresizingMaskIntoConstraints = false
-		view.setupViews()
-		
-		self.view.addSubview(view)
-		
-		popupWeatherInfoView = view
-		popupWeatherInfoView?.saveButton.isHidden = true
-		
-		NSLayoutConstraint.activate([
-			
-			view.leadingAnchor.constraint(equalTo: self.view.leadingAnchor, constant: ViewConfig.padding),
-			view.heightAnchor.constraint(equalToConstant: ViewConfig.popupViewHeight),
-			view.centerYAnchor.constraint(equalTo: self.view.centerYAnchor),
-			view.widthAnchor.constraint(equalTo: self.view.widthAnchor, constant: -ViewConfig.padding * 2),
-			
-			])
+		let popupView: PopupWeatherInfoView = PopupWeatherInfoView(savedCity: savedCity, delegate: self)
+		popupView.transitioningDelegate = self
+		popupView.modalPresentationStyle = .custom
+		popupWeatherInfoView = popupView
+		self.present(popupView, animated: true, completion: nil)
 	}
 	
     // MARK: - Table view data source
@@ -108,7 +80,6 @@ class ListTableViewController: UITableViewController {
         return true
     }
 
-
     // Override to support editing the table view.
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
@@ -122,6 +93,8 @@ class ListTableViewController: UITableViewController {
     }
 	
 	override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+		tableView.deselectRow(at: indexPath, animated: true)
+		
 		if let savedCity: SavedCity = cities?[indexPath.row] {
 			showPopupWeatherInfoView(savedCity: savedCity)
 		}
@@ -130,7 +103,17 @@ class ListTableViewController: UITableViewController {
 }
 
 extension ListTableViewController: PopupWeatherInfoViewDelegate {
-	func closePopupView() {
-		popupWeatherInfoView?.removeFromSuperview()
+	func savedCity(success: Bool, error: CustomSaveCityErrors?) {
+		/// no implementation for this class
 	}
+	
+	func closePopupView(completion: (() -> Void)? = nil) {
+		popupWeatherInfoView?.dismiss(animated: true, completion: completion)
+	}
+}
+
+extension ListTableViewController : UIViewControllerTransitioningDelegate {
+    func presentationController(forPresented presented: UIViewController, presenting: UIViewController?, source: UIViewController) -> UIPresentationController? {
+        return CustomPresentationController(presentedViewController: presented, presenting: presenting)
+    }
 }

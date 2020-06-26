@@ -9,6 +9,15 @@
 import UIKit
 import CoreData
 
+enum SaveCityErrors : String, Error, CustomStringConvertible {
+    case cityAlreadySaved
+	case citySaveError
+	
+	var description: String {
+        return "\(self.rawValue)"
+    }
+}
+
 class DataManager {
 	
 	static let shared = DataManager()
@@ -42,10 +51,10 @@ class DataManager {
 		return results.count > 0
 	}
 	
-	func saveCity(savedCity: SavedCity, completionHandler: @escaping (Bool, NSError?) -> Void) {
+	func saveCity(savedCity: SavedCity, completionHandler: @escaping (Result<Bool, SaveCityErrors>) -> Void) {
 		
 		guard !checkExists(id: savedCity.id) else {
-			completionHandler(false, nil)
+			completionHandler(.failure(.cityAlreadySaved))
 			return
 		}
 		
@@ -66,10 +75,9 @@ class DataManager {
 			
 			do {
 				try managedContext.save()
-				completionHandler(true, nil)
-			} catch let error as NSError {
-				print("Could not save. \(error), \(error.userInfo)")
-				completionHandler(false, error)
+				completionHandler(.success(true))
+			} catch {
+				completionHandler(.failure(.citySaveError))
 			}
 		}
 	}

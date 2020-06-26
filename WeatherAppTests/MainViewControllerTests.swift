@@ -57,7 +57,7 @@ class MainViewControllerTests: TestCase {
 		mainView.setupViews()
 		mainView.locationManager = locationManager
 		let cityName = city.name
-		mainView.updateCity(cityName, timeZone: TimeZone(identifier: "UTC")!, coord: Coordinate(lat: 0, lon: 0))
+		mainView.updateCity(cityName: cityName, timeZone: TimeZone(identifier: "UTC")!, coord: Coordinate(lat: 0, lon: 0))
 		
 		XCTAssertTrue(self.mainView.weatherInfoView.cityLabel.text == cityName, "updateCity should return correct city name")
 		XCTAssertTrue(self.mainView.weatherInfoView.tempLabel.text == "303℃", "updateCity should return correct temp")
@@ -74,7 +74,7 @@ class MainViewControllerTests: TestCase {
 		mainView.locationManager = locationManager
 		let cityName = city.name
 
-		mainView.updateCity(cityName, timeZone: TimeZone(identifier: "UTC")!, coord: Coordinate(lat: 0, lon: 0))
+		mainView.updateCity(cityName: cityName, timeZone: TimeZone(identifier: "UTC")!, coord: Coordinate(lat: 0, lon: 0))
 		
 		XCTAssertTrue(self.mainView.weatherInfoView.cityLabel.text == cityName, "updateCity should return correct city name")
 		XCTAssertTrue(self.mainView.weatherInfoView.tempLabel.text == nil, "updateCity should not return correct temp")
@@ -84,7 +84,7 @@ class MainViewControllerTests: TestCase {
 }
 
 extension MainViewControllerTests: LocationManagerDelegate {
-	func updateCity(_ cityName: String, timeZone: TimeZone, coord: Coordinate) {
+	func updateCity(cityName: String, timeZone: TimeZone, coord: Coordinate) {
 		
 	}
 	

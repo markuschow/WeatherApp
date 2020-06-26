@@ -163,6 +163,13 @@ class MainViewController: UIViewController {
 	
 	func setupSearchController() {
 		searchController.obscuresBackgroundDuringPresentation = false
+		
+		if #available(iOS 13.0, *) {
+			searchController.searchBar.searchTextField.backgroundColor = .lightGray
+		} else {
+			searchController.searchBar.textField?.backgroundColor = .lightGray
+		}
+		searchController.searchBar.textField?.backgroundColor = .lightGray
 		searchController.searchBar.placeholder = "Search City"
 		searchController.searchBar.searchBarStyle = .minimal
 		searchController.searchBar.tintColor = .white
@@ -183,21 +190,12 @@ class MainViewController: UIViewController {
 	
 	func showPopupWeatherInfoView(city: City, weatherResponse: WeatherResponse) {
 		guard let savedCity = DataManager.getSavedCity(city: city, cityName: city.name, weatherResponse: weatherResponse) else { return }
-		let view = PopupWeatherInfoView(savedCity: savedCity, delegate: self)
-		view.translatesAutoresizingMaskIntoConstraints = false
-		view.setupViews()
-		self.view.addSubview(view)
+		let popupView: PopupWeatherInfoView = PopupWeatherInfoView(savedCity: savedCity, delegate: self)
+		popupView.transitioningDelegate = self
+		popupView.modalPresentationStyle = .custom
+		popupWeatherInfoView = popupView
+		self.present(popupView, animated: true, completion: nil)
 		
-		popupWeatherInfoView = view
-		
-		NSLayoutConstraint.activate([
-			
-			view.leadingAnchor.constraint(equalTo: self.view.leadingAnchor, constant: ViewConfig.padding),
-			view.trailingAnchor.constraint(equalTo: self.view.trailingAnchor, constant: -ViewConfig.padding),
-			view.heightAnchor.constraint(equalToConstant: ViewConfig.popupViewHeight),
-			view.centerYAnchor.constraint(equalTo: self.view.centerYAnchor),
-			
-			])
 	}
 	
 	// MARK: - Methods
@@ -217,13 +215,18 @@ class MainViewController: UIViewController {
 	
 	func filterContentForSearchText(_ searchText: String) {
 		
-		self.filteredCities = self.cities.filter({( city : City) -> Bool in
-			if !self.searchBarIsEmpty() {
+		DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+			guard let self = self else { return }
+
+			self.filteredCities = self.cities.filter({( city : City) -> Bool in
 				return city.name.lowercased().contains(searchText.lowercased())
+			})
+
+			DispatchQueue.main.async {
+				self.tableView.reloadData()
 			}
-			return false
-		})
-		self.tableView.reloadData()
+		}
+		
 	}
 	
 	func searchBarIsEmpty() -> Bool {
@@ -239,9 +242,15 @@ extension MainViewController: UISearchBarDelegate {
 	func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
 		if let text = searchController.searchBar.text {
 			filterContentForSearchText(text)
-			self.closePopupView()
 		}
 	}
+	
+	func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+		if let text = searchController.searchBar.text {
+			filterContentForSearchText(text)
+		}
+	}
+	
 	func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
 		filteredCities.removeAll()
 		tableView.reloadData()
@@ -268,9 +277,27 @@ extension MainViewController: WeatherInfoViewDelegate {
 }
 
 extension MainViewController: PopupWeatherInfoViewDelegate {
-	func closePopupView() {
-		popupWeatherInfoView?.removeFromSuperview()
+	func closePopupView(completion: (() -> Void)?) {
+		popupWeatherInfoView?.dismiss(animated: true, completion: completion)
 	}
+	
+	func savedCity(success: Bool, error: CustomSaveCityErrors?) {
+		closePopupView {
+			if success {
+				AlertView.show(title: "Saved City", message: nil, action: "OK")
+			} else {
+				switch error {
+				case .cityAlreadySaved:
+					AlertView.show(title: "City Exists", message: nil, action: "OK")
+				case .citySaveError:
+					fallthrough
+				default:
+					AlertView.show(title: "Saved City Error", message: nil, action: "OK")
+				}
+			}
+		}
+	}
+
 }
 
 extension MainViewController: LocationManagerDelegate {
@@ -369,9 +396,9 @@ extension MainViewController: UITableViewDataSource {
 	
 }
 
-extension UINavigationController {
-	open override var preferredStatusBarStyle: UIStatusBarStyle {
-		return topViewController?.preferredStatusBarStyle ?? .lightContent
-	}
+extension MainViewController : UIViewControllerTransitioningDelegate {
+    func presentationController(forPresented presented: UIViewController, presenting: UIViewController?, source: UIViewController) -> UIPresentationController? {
+        return CustomPresentationController(presentedViewController: presented, presenting: presenting)
+    }
 }
 

@@ -8,11 +8,21 @@
 
 import UIKit
 
-protocol PopupWeatherInfoViewDelegate: class {
-	func closePopupView()
+enum CustomSaveCityErrors : String, Error, CustomStringConvertible {
+    case cityAlreadySaved
+	case citySaveError
+	
+	var description: String {
+        return "\(self.rawValue)"
+    }
 }
 
-class PopupWeatherInfoView: UIView {
+protocol PopupWeatherInfoViewDelegate: class {
+	func closePopupView(completion: (() -> Void)?)
+	func savedCity(success: Bool, error: CustomSaveCityErrors?)
+}
+
+class PopupWeatherInfoView: UIViewController {
 	
 	weak var delegate: PopupWeatherInfoViewDelegate?
 	
@@ -23,7 +33,16 @@ class PopupWeatherInfoView: UIView {
 		static let padding: CGFloat = 10
 		static let buttonTopPadding: CGFloat = 5
 		static let buttonSize: CGFloat = 30
+		static let containerViewHeight: CGFloat = 180
 	}
+		
+	private var blurBackground: UIVisualEffectView = {
+		let blurEffect = UIBlurEffect(style: .dark)
+		let blurEffectView = UIVisualEffectView(effect: blurEffect)
+		blurEffectView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+		blurEffectView.translatesAutoresizingMaskIntoConstraints = false
+		return blurEffectView
+	}()
 	
 	private var weatherInfoView: WeatherInfoView = {
 		let view = WeatherInfoView()
@@ -50,8 +69,9 @@ class PopupWeatherInfoView: UIView {
 	init(savedCity: SavedCity, delegate: PopupWeatherInfoViewDelegate) {
 		self.delegate = delegate
 		self.savedCity = savedCity
-		super.init(frame: .zero)
+		super.init(nibName: nil, bundle: nil)
 		
+		setupViews()
 	}
 	
 	required init?(coder aDecoder: NSCoder) {
@@ -59,13 +79,20 @@ class PopupWeatherInfoView: UIView {
 	}
 	
 	func setupViews() {
-		self.setAccessibility(id: PopupWeatherInfoViewAcessiblityIdentifier.popupViewIdentifier.rawValue, label: nil)
-		self.backgroundColor = UIColor.lightGray.withAlphaComponent(0.7)
-		self.layer.cornerRadius = 10
+		self.view.setAccessibility(id: PopupWeatherInfoViewAcessiblityIdentifier.popupViewIdentifier.rawValue, label: nil)
+
+		self.view.layer.cornerRadius = 10
 		
-		self.addSubview(weatherInfoView)
-		self.addSubview(closeButton)
-		self.addSubview(saveButton)
+		self.view.addSubview(blurBackground)
+		self.view.addSubview(weatherInfoView)
+		self.view.addSubview(closeButton)
+		self.view.addSubview(saveButton)
+		
+		if let id = self.savedCity?.id {
+			saveButton.isHidden = DataManager.shared.checkExists(id: id)
+		} else {
+			saveButton.isHidden = true
+		}
 
 		applyAutolayoutConstraints()
 		
@@ -84,18 +111,23 @@ class PopupWeatherInfoView: UIView {
 		
 		NSLayoutConstraint.activate([
 			
-			weatherInfoView.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: ViewConfig.padding),
-			weatherInfoView.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -ViewConfig.padding),
-			weatherInfoView.topAnchor.constraint(equalTo: self.topAnchor, constant: ViewConfig.topPadding),
-			weatherInfoView.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -ViewConfig.padding),
+			blurBackground.topAnchor.constraint(equalTo: self.view.topAnchor),
+			blurBackground.bottomAnchor.constraint(equalTo: self.view.bottomAnchor),
+			blurBackground.leadingAnchor.constraint(equalTo: self.view.leadingAnchor),
+			blurBackground.trailingAnchor.constraint(equalTo: self.view.trailingAnchor),
+			
+			weatherInfoView.leadingAnchor.constraint(equalTo: self.view.leadingAnchor, constant: ViewConfig.padding),
+			weatherInfoView.trailingAnchor.constraint(equalTo: self.view.trailingAnchor, constant: -ViewConfig.padding),
+			weatherInfoView.topAnchor.constraint(equalTo: self.view.topAnchor, constant: ViewConfig.topPadding),
+			weatherInfoView.heightAnchor.constraint(equalToConstant: ViewConfig.containerViewHeight),
 
-			closeButton.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -ViewConfig.padding),
-			closeButton.topAnchor.constraint(equalTo: self.topAnchor, constant: ViewConfig.buttonTopPadding),
+			closeButton.trailingAnchor.constraint(equalTo: self.view.trailingAnchor, constant: -ViewConfig.padding),
+			closeButton.topAnchor.constraint(equalTo: self.view.topAnchor, constant: ViewConfig.buttonTopPadding),
 			closeButton.widthAnchor.constraint(equalToConstant: ViewConfig.buttonSize),
 			closeButton.heightAnchor.constraint(equalToConstant: ViewConfig.buttonSize),
 			
-			saveButton.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: ViewConfig.padding),
-			saveButton.topAnchor.constraint(equalTo: self.topAnchor, constant: ViewConfig.buttonTopPadding),
+			saveButton.leadingAnchor.constraint(equalTo: self.view.leadingAnchor, constant: ViewConfig.padding),
+			saveButton.topAnchor.constraint(equalTo: self.view.topAnchor, constant: ViewConfig.buttonTopPadding),
 			saveButton.widthAnchor.constraint(equalToConstant: ViewConfig.buttonSize),
 			saveButton.heightAnchor.constraint(equalToConstant: ViewConfig.buttonSize),
 
@@ -104,20 +136,23 @@ class PopupWeatherInfoView: UIView {
 	}
 	
 	@objc func close(_ sender: UIButton) {
-		delegate?.closePopupView()
+		delegate?.closePopupView(completion: nil)
 	}
 	
 	@objc func save(_ sender: UIButton) {
 		if let savedCity = self.savedCity {
-			DataManager.shared.saveCity(savedCity: savedCity) { (success, error) in
-				if let error = error {
-					AlertView.show(title: "Saved City Error", message: error.localizedDescription, action: "OK")
-				}
-			
-				if success {
-					AlertView.show(title: "Saved City", message: nil, action: "OK")
-				} else {
-					AlertView.show(title: "City Exist", message: nil, action: "OK")
+			DataManager.shared.saveCity(savedCity: savedCity) { [weak self] reuslt in
+				guard let self = self else { return }
+				
+				switch reuslt {
+				case .success(true):
+					self.delegate?.savedCity(success: true, error: nil)
+				case .failure(.cityAlreadySaved):
+					self.delegate?.savedCity(success: false, error: .cityAlreadySaved)
+				case .failure(.citySaveError):
+					fallthrough
+				default:
+					self.delegate?.savedCity(success: false, error: .citySaveError)
 				}
 				
 			}
