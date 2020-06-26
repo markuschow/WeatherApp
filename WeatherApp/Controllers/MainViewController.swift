@@ -300,6 +300,13 @@ extension MainViewController: PopupWeatherInfoViewDelegate {
 
 }
 
+extension MainViewController: UIScrollViewDelegate {
+
+	func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
+		searchController.searchBar.resignFirstResponder()
+	}
+}
+
 extension MainViewController: LocationManagerDelegate {
 	func updateCity(cityName: String, timeZone: TimeZone, coord: Coordinate) {
 		
