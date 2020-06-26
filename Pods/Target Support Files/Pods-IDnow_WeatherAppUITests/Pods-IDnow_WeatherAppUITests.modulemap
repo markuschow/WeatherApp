@@ -1,6 +1,0 @@
-framework module Pods_IDnow_WeatherAppUITests {
-  umbrella header "Pods-IDnow_WeatherAppUITests-umbrella.h"
-
-  export *
-  module * { export * }
-}
