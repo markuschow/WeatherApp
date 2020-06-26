@@ -36,9 +36,23 @@ class ListTableViewController: UITableViewController {
 	override func viewWillAppear(_ animated: Bool) {
 		super.viewWillAppear(animated)
 		
+		self.navigationController?.navigationBar.setBackgroundImage(UIImage.imageWithColor(color: .lightGray), for: UIBarMetrics.default)
+		self.navigationController?.navigationBar.shadowImage = nil
+		self.navigationController?.navigationBar.isTranslucent = false
+
 		cities = DataManager.shared.fetchCity()
 		tableView.reloadData()
 
+	}
+	
+	override func viewWillDisappear(_ animated: Bool) {
+		self.navigationController?.navigationBar.setBackgroundImage(UIImage(), for: UIBarMetrics.default)
+		self.navigationController?.navigationBar.shadowImage = UIImage()
+		self.navigationController?.navigationBar.isTranslucent = true
+		self.navigationController?.view.backgroundColor = .clear
+
+		super.viewWillDisappear(animated)
+		
 	}
 	
 	@objc func deleteAll() {
