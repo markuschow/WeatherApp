@@ -1,4 +1,4 @@
-# IDNow_WeatherApp
+# WeatherApp
 This application was created to show the city weather by using API from OpenWeatherMap.
 - The application start with the main view showing the current location weather information.
 - The current weather information will be saved locally, and reload later when the app relaunch
@@ -24,7 +24,7 @@ This application was created to show the city weather by using API from OpenWeat
 
 ## Specs
 - Swift version: 5
-- Xcode version: 10.3
+- Xcode version: 11.5
 
 ## Screenshots
 
